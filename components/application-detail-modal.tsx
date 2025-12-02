@@ -1,0 +1,425 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { X, ChevronDown, ChevronUp, Plus, MoreVertical } from "lucide-react"
+import type { Application, ApplicationEvent } from "@/lib/mock-data"
+import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
+import { AddEventBottomSheet } from "./add-event-bottom-sheet"
+
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
+
+function formatDateDisplay(isoDate: string): string {
+  const date = new Date(isoDate)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const weekday = WEEKDAYS[date.getDay()]
+  return `${month}/${day}（${weekday}）`
+}
+
+function formatTimeRange(startTime: string, endTime: string): string {
+  return `${startTime}〜${endTime}`
+}
+
+function getNextEvent(events: ApplicationEvent[]) {
+  const now = new Date()
+  const futureEvents = events.filter((e) => {
+    const eventDate = new Date(`${e.date}T${e.startTime}`)
+    return eventDate > now
+  })
+
+  // First try to find confirmed events
+  const confirmedFuture = futureEvents.filter((e) => e.status === "confirmed")
+  if (confirmedFuture.length > 0) {
+    return confirmedFuture.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date)
+      if (dateCompare !== 0) return dateCompare
+      return a.startTime.localeCompare(b.startTime)
+    })[0]
+  }
+
+  // If no confirmed, try candidate events
+  const candidateFuture = futureEvents.filter((e) => e.status === "candidate")
+  if (candidateFuture.length > 0) {
+    return candidateFuture.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date)
+      if (dateCompare !== 0) return dateCompare
+      return a.startTime.localeCompare(b.startTime)
+    })[0]
+  }
+
+  return null
+}
+
+interface ApplicationDetailModalProps {
+  application: Application
+  isMasked: boolean
+  isOpen: boolean
+  onClose: () => void
+  onEventAdded: (applicationId: string, event: Omit<ApplicationEvent, "id">) => void
+  onEventUpdated: (applicationId: string, eventId: string, event: Omit<ApplicationEvent, "id">) => void
+  onEventDeleted: (applicationId: string, eventId: string) => void
+}
+
+export function ApplicationDetailModal({
+  application,
+  isMasked,
+  isOpen,
+  onClose,
+  onEventAdded,
+  onEventUpdated,
+  onEventDeleted,
+}: ApplicationDetailModalProps) {
+  const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set())
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<ApplicationEvent | null>(null)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchOffset, setTouchOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimating(true)
+    }
+  }, [isOpen])
+
+  const handleClose = () => {
+    setIsAnimating(false)
+    setTimeout(() => {
+      onClose()
+      setTouchStart(null)
+      setTouchOffset(0)
+      setIsDragging(false)
+    }, 250)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    setTouchStart(touch.clientY)
+    setIsDragging(true)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStart === null) return
+
+    const touch = e.touches[0]
+    const diff = touch.clientY - touchStart
+
+    // Only allow downward swipe
+    if (diff > 0) {
+      setTouchOffset(diff)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    const threshold = 100 // Close if swiped down more than 100px
+    const velocity = touchOffset
+
+    if (velocity > threshold) {
+      handleClose()
+    } else {
+      // Snap back
+      setTouchOffset(0)
+    }
+
+    setTouchStart(null)
+    setIsDragging(false)
+  }
+
+  const handleAddEventClose = () => {
+    setIsAddEventOpen(false)
+  }
+
+  if (!isOpen) return null
+
+  const toggleEvent = (index: number) => {
+    setExpandedEvents((prev) => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
+  }
+
+  const sortedEvents = [...application.events].sort((a, b) => {
+    const dateCompare = b.date.localeCompare(a.date)
+    if (dateCompare !== 0) return dateCompare
+    return b.startTime.localeCompare(a.startTime)
+  })
+
+  const handleAddEvent = (event: Omit<ApplicationEvent, "id">) => {
+    onEventAdded(application.id, event)
+    setIsAddEventOpen(false)
+  }
+
+  const handleUpdateEvent = (event: Omit<ApplicationEvent, "id">) => {
+    if (editingEvent) {
+      onEventUpdated(application.id, editingEvent.id, event)
+      setEditingEvent(null)
+      setIsAddEventOpen(false)
+    }
+  }
+
+  const handleDeleteEvent = () => {
+    if (editingEvent) {
+      onEventDeleted(application.id, editingEvent.id)
+      setEditingEvent(null)
+      setIsAddEventOpen(false)
+    }
+  }
+
+  const handleEditEvent = (event: ApplicationEvent) => {
+    setEditingEvent(event)
+    setIsAddEventOpen(true)
+  }
+
+  const nextEvent = getNextEvent(application.events)
+
+  return (
+    <>
+      <div
+        className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-250 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleClose}
+      />
+
+      <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none">
+        <div
+          className={`w-full max-w-[640px] bg-white rounded-t-3xl shadow-lg pointer-events-auto ${
+            isDragging ? "" : "transition-all duration-250 ease-out"
+          } ${
+            isAnimating ? "opacity-100" : "opacity-0"
+          } max-h-[80vh] min-h-[40vh] flex flex-col overflow-hidden overscroll-contain`}
+          style={{
+            transform: isAnimating ? `translateY(${touchOffset}px)` : "translateY(100%)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="sticky top-0 z-10 bg-white border-b border-[#E5E7EB] touch-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+              <div className="w-10 h-1 bg-[#E5E7EB] rounded-full" />
+            </div>
+
+            <div className="px-4 pb-4 md:px-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-[#1A1A1A] tracking-[0.25px]">
+                    {getDisplayCompanyName(application.company, isMasked)}
+                  </h2>
+                  <p className="text-sm text-[#6B7280] mt-0.5">{application.position}</p>
+                </div>
+                <button onClick={handleClose} className="ml-4 rounded-full p-2 hover:bg-[#F5F6F8] transition-colors">
+                  <X className="h-5 w-5 text-[#6B7280]" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-6 space-y-6">
+            <div className="rounded-[14px] bg-[#F5F6F8] p-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-block rounded-full bg-white px-3 py-1 text-xs font-medium text-[#555] shadow-sm">
+                  {getSourceTypeLabel(application.sourceType)}
+                </span>
+                <span className="inline-block rounded-full bg-[#E8F1FF] px-3 py-1 text-xs font-medium text-[#2F80ED]">
+                  {application.stage}
+                </span>
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
+                    application.status === "確定"
+                      ? "bg-[#E7F8ED] text-[#34A853]"
+                      : application.status === "相手ボール"
+                        ? "bg-[#FFF7DA] text-[#E6B400]"
+                        : "bg-white text-[#A1A1AA] shadow-sm"
+                  }`}
+                >
+                  {application.status}
+                </span>
+              </div>
+
+              {application.sourceLabel && (
+                <p className="text-sm text-[#6B7280]">
+                  {getDisplaySourceLabel(application.sourceType, application.sourceLabel, isMasked)}
+                </p>
+              )}
+
+              {nextEvent ? (
+                <div className="pt-2 border-t border-[#E5E7EB]">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="text-xs text-[#6B7280] mb-1">
+                        次のイベント：
+                        {nextEvent.status === "candidate" && <span className="text-[#E6B400]">(候補)</span>}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1A1A1A]">
+                        {formatDateDisplay(nextEvent.date)}{" "}
+                        <span className="text-[#6B7280] font-normal">
+                          {formatTimeRange(nextEvent.startTime, nextEvent.endTime)}
+                        </span>
+                      </p>
+                      <p className="text-sm text-[#6B7280]">{nextEvent.title || nextEvent.type}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingEvent(null)
+                        setIsAddEventOpen(true)
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#2F80ED] text-white text-xs font-semibold rounded-full hover:bg-blue-600 transition-colors shadow-sm flex-shrink-0"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      追加
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-[#E5E7EB]">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm text-[#6B7280]">次のイベントはまだありません</p>
+                    <button
+                      onClick={() => {
+                        setEditingEvent(null)
+                        setIsAddEventOpen(true)
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-[#2F80ED] text-white text-xs font-semibold rounded-full hover:bg-blue-600 transition-colors shadow-sm flex-shrink-0"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      追加
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-3 tracking-[0.25px]">イベントタイムライン</h3>
+              <div className="space-y-4">
+                {sortedEvents.map((event, index) => {
+                  const isExpanded = expandedEvents.has(index)
+                  const hasNote = event.note && event.note.trim() !== ""
+
+                  return (
+                    <div key={event.id} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="h-3 w-3 rounded-full bg-[#2F80ED] flex-shrink-0 mt-1" />
+                        {index < sortedEvents.length - 1 && <div className="w-0.5 flex-1 bg-[#E5E7EB] min-h-[40px]" />}
+                      </div>
+
+                      <div className="flex-1 pb-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="text-sm font-semibold text-[#1A1A1A]">
+                              {formatDateDisplay(event.date)}{" "}
+                              <span className="text-[#6B7280] font-normal">
+                                {formatTimeRange(event.startTime, event.endTime)}
+                              </span>
+                              {event.status === "candidate" && (
+                                <span className="ml-1 text-xs text-[#E6B400]">(候補)</span>
+                              )}
+                            </div>
+                            <div className="text-sm text-[#6B7280] mt-0.5">{event.type}</div>
+                            {event.person && <div className="text-sm text-[#555] mt-1">{event.person}</div>}
+                          </div>
+                          <button
+                            onClick={() => handleEditEvent(event)}
+                            className="p-1.5 rounded-full hover:bg-[#F5F6F8] transition-colors flex-shrink-0"
+                            aria-label="イベントを編集"
+                          >
+                            <MoreVertical className="h-4 w-4 text-[#A1A1AA]" />
+                          </button>
+                        </div>
+
+                        {hasNote && (
+                          <div className="mt-2">
+                            {isMasked ? (
+                              <p className="text-xs text-[#A1A1AA] italic">メモ：Private</p>
+                            ) : (
+                              <>
+                                <p className={`text-sm text-[#333] ${!isExpanded ? "line-clamp-2" : ""}`}>
+                                  {event.note}
+                                </p>
+                                {event.note.length > 100 && (
+                                  <button
+                                    onClick={() => toggleEvent(index)}
+                                    className="flex items-center gap-1 text-xs text-[#2F80ED] hover:text-blue-700 mt-1 font-medium transition-colors"
+                                  >
+                                    {isExpanded ? (
+                                      <>
+                                        閉じる <ChevronUp className="h-3 w-3" />
+                                      </>
+                                    ) : (
+                                      <>
+                                        詳細を見る <ChevronDown className="h-3 w-3" />
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 tracking-[0.25px]">この応募のメモ</h3>
+              <div className="rounded-[14px] bg-[#F5F6F8] p-4">
+                {isMasked ? (
+                  <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
+                ) : (
+                  <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                    {application.globalNote || "メモはまだありません"}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {application.todos.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 tracking-[0.25px]">関連するTo-Do</h3>
+                <div className="space-y-2">
+                  {application.todos.map((todo) => (
+                    <div key={todo.id} className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        readOnly
+                        className="mt-0.5 h-4 w-4 rounded border-[#E5E7EB] text-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED] focus:ring-offset-0"
+                      />
+                      <span className={`text-sm ${todo.completed ? "text-[#A1A1AA] line-through" : "text-[#333]"}`}>
+                        {todo.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AddEventBottomSheet
+        isOpen={isAddEventOpen}
+        onClose={handleAddEventClose}
+        onSave={editingEvent ? handleUpdateEvent : handleAddEvent}
+        onDelete={editingEvent ? handleDeleteEvent : undefined}
+        mode={editingEvent ? "edit" : "add"}
+        existingEvent={editingEvent || undefined}
+      />
+    </>
+  )
+}
