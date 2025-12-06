@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
+import { createApplication } from "@/app/actions/applications"
 
 interface NewOpportunityBottomSheetProps {
   isOpen: boolean
@@ -63,6 +64,7 @@ const positionSuggestions = ["プロダクトマネージャー", "PdM", "プロ
 const defaultHeadHunters: HeadHunter[] = ["FLUX 小池", "ビズリーチ", "Sun* 黒岡"]
 
 export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBottomSheetProps) {
+  const [isPending, startTransition] = useTransition()
   const [source, setSource] = useState<SourceType>(null)
   const [selectedHeadHunter, setSelectedHeadHunter] = useState<HeadHunter | null>(null)
   const [isAddingNewHH, setIsAddingNewHH] = useState(false)
@@ -119,18 +121,31 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
   }
 
   const handleSave = () => {
-    const newOpportunity = {
-      source,
-      headHunter: source === "ヘッドハンター" ? selectedHeadHunter : null,
-      company,
-      position,
-      stage,
-      status,
-      nextAction,
-      interviewDate: interviewDate || null,
-    }
-    console.log("New opportunity created:", newOpportunity)
-    handleClose()
+    startTransition(async () => {
+      const formData = new FormData()
+      formData.append("company_name", company)
+      formData.append("position_title", position)
+      
+      let sourceValue = "other"
+      if (source === "ヘッドハンター") sourceValue = "agent"
+      else if (source === "ダイレクト") sourceValue = "direct"
+      else if (source === "リファラル") sourceValue = "referral"
+      else if (source === "自己応募") sourceValue = "self"
+      
+      formData.append("source", sourceValue)
+      
+      let stageValue = "research"
+      if (stage === "ヘッドハンター面談") stageValue = "research"
+      else if (stage === "カジュアル面談") stageValue = "research"
+      else if (stage === "書類選考") stageValue = "screening"
+      else if (stage.includes("面接")) stageValue = "interviewing"
+      
+      formData.append("stage", stageValue)
+      formData.append("status_note", JSON.stringify({ status, nextAction, interviewDate }))
+
+      await createApplication(formData)
+      handleClose()
+    })
   }
 
   const isFormValid = company.trim() && position.trim() && stage && status
@@ -173,7 +188,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
           <div className="mb-6">
             <label className="mb-2 block text-sm font-medium text-gray-700">どこからの紹介？</label>
             <div className="flex flex-wrap gap-2">
-              {(["ヘッドハンター", "ダイレクト", "リファラル", "自分で応募"] as const).map((option) => (
+              {(["ヘッドハンター", "ダイレクト", "リファラル", "自己応募"] as const).map((option) => (
                 <button
                   key={option}
                   onClick={() => {
@@ -367,12 +382,12 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
           </button>
           <button
             onClick={handleSave}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isPending}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              isFormValid ? "bg-blue-600 text-white hover:bg-blue-700" : "cursor-not-allowed bg-gray-200 text-gray-400"
+              isFormValid && !isPending ? "bg-blue-600 text-white hover:bg-blue-700" : "cursor-not-allowed bg-gray-200 text-gray-400"
             }`}
           >
-            保存して閉じる
+            {isPending ? "保存中..." : "保存して閉じる"}
           </button>
         </div>
       </div>

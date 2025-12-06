@@ -1,4 +1,4 @@
-export type SourceType = "agent" | "direct" | "self" | "referral"
+export type SourceType = "agent" | "direct" | "self" | "referral" | "other"
 export type ApplicationEventStatus = "confirmed" | "candidate"
 export type ApplicationLifecycleStatus = "ongoing" | "closed"
 export type RejectionStatus = "active" | "rejected"
@@ -43,9 +43,9 @@ export interface Application {
   rejectionStatus: RejectionStatus
 }
 
-export type GrowthLogCategory = "input" | "output" | "community"
+export type GrowthLogCategory = "input" | "output" | "community" | "project" | "other"
 export type GrowthLogType = "勉強会" | "登壇" | "執筆" | "読書" | "オンライン講座" | "その他"
-export type GrowthLogSource = "manual" | "google_calendar"
+export type GrowthLogSource = "manual" | "google_calendar" | "imported" | "other"
 
 export interface GrowthLog {
   id: string
@@ -195,7 +195,7 @@ export const applications: Application[] = [
     startTime: "09:30",
     endTime: "10:00",
     memo: "ー",
-    sourceType: "self",
+    sourceType: "direct",
     sourceLabel: "",
     applicationStatus: "ongoing",
     stepCurrent: 1,
@@ -349,6 +349,8 @@ export function getGrowthLogCategoryLabel(category: GrowthLogCategory): string {
     input: "技術学習",
     output: "アウトプット",
     community: "コミュニティ",
+    project: "プロジェクト",
+    other: "その他",
   }
   return labels[category]
 }

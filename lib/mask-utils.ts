@@ -24,6 +24,8 @@ export const getSourceTypeLabel = (sourceType: SourceType): string => {
       return "自己応募"
     case "referral":
       return "リファラル"
+    case "other":
+      return "その他"
   }
 }
 
@@ -38,5 +40,7 @@ export const getSourceTypeBadgeClasses = (sourceType: SourceType): string => {
       return `${base} bg-gray-100 text-gray-800`
     case "referral":
       return `${base} bg-purple-100 text-purple-800`
+    case "other":
+      return `${base} bg-gray-100 text-gray-800`
   }
 }

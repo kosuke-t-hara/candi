@@ -1,203 +1,80 @@
-"use client"
+import { getApplications } from "@/app/actions/applications"
+import { getGrowthLogs } from "@/app/actions/growth"
+import { HomePageClient } from "@/components/home-page-client"
+import type { Application, GrowthLog, ApplicationEvent } from "@/lib/mock-data"
+import type { Database } from "@/lib/types/database"
 
-import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { CandidateSummary } from "@/components/candidate-summary"
-import { DailyQuestionCard } from "@/components/daily-question-card"
-import { ApplicationTable } from "@/components/application-table"
-import { ApplicationCardList } from "@/components/application-card-list"
-import { TodoSection } from "@/components/todo-section"
-import { FloatingActionButton } from "@/components/floating-action-button"
-import { NewOpportunityBottomSheet } from "@/components/new-opportunity-bottom-sheet"
-import { WeeklySchedule } from "@/components/weekly-schedule"
-import { ApplicationDetailModal } from "@/components/application-detail-modal"
-import { applications as initialApplications, growthLogs } from "@/lib/mock-data"
-import type { SortMode, SortDirection } from "@/lib/sort-utils"
-import type { Application, ApplicationEvent } from "@/lib/mock-data"
-
-export default function Home() {
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [isMasked, setIsMasked] = useState(false)
-  const [sortMode, setSortMode] = useState<SortMode>("nextEvent")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
-  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null)
-  const [applications, setApplications] = useState<Application[]>(initialApplications)
-
-  const ongoingApplications = applications.filter((app) => app.applicationStatus === "ongoing")
-
-  const handleSortModeChange = (mode: SortMode) => {
-    setSortMode(mode)
-    setSortDirection("asc")
+// Helper to map DB application to UI Application type
+function mapApplicationToUI(
+  dbApp: Database['public']['Tables']['applications']['Row'] & { 
+    events: Database['public']['Tables']['application_events']['Row'][] 
   }
+): Application {
+  const events: ApplicationEvent[] = dbApp.events.map(e => ({
+    id: e.id,
+    date: e.starts_at.split('T')[0], // Assuming ISO string
+    startTime: e.starts_at.split('T')[1]?.substring(0, 5) || "00:00",
+    endTime: e.ends_at ? e.ends_at.split('T')[1]?.substring(0, 5) || "00:00" : "00:00",
+    type: e.kind, // Map kind to type label if needed, or use as is
+    status: e.outcome === 'scheduled' ? 'confirmed' : 'candidate', // Simplified mapping
+    title: e.title || undefined,
+    note: e.notes || "",
+  }))
 
-  const handleSortDirectionToggle = () => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+  return {
+    id: dbApp.id,
+    company: dbApp.company_name,
+    position: dbApp.position_title || "",
+    stage: dbApp.stage,
+    status: "確定", // Default
+    nextAction: "なし", // Default
+    scheduledDate: "", // Logic to find next event date
+    startTime: "",
+    endTime: "",
+    memo: dbApp.status_note || "",
+    sourceType: dbApp.source,
+    sourceLabel: "",
+    applicationStatus: dbApp.archived ? "closed" : "ongoing",
+    stepCurrent: 1, // Placeholder
+    stepTotal: 5, // Placeholder
+    rejectionStatus: "active", // Placeholder
+    events: events,
+    globalNote: "",
+    todos: [], // Placeholder
   }
+}
 
-  const handleApplicationClick = (id: string) => {
-    setSelectedApplicationId(id)
+function mapGrowthLogToUI(dbLog: Database['public']['Tables']['growth_logs']['Row']): GrowthLog {
+  return {
+    id: dbLog.id,
+    title: dbLog.title,
+    category: dbLog.category,
+    type: dbLog.type as any, // Cast if types don't match exactly
+    date: dbLog.starts_at.split('T')[0],
+    startTime: dbLog.starts_at.split('T')[1]?.substring(0, 5) || "00:00",
+    endTime: dbLog.ends_at ? dbLog.ends_at.split('T')[1]?.substring(0, 5) || "00:00" : "00:00",
+    memo: dbLog.reflection || "",
+    source: dbLog.source,
+    createdAt: dbLog.created_at,
+    updatedAt: dbLog.updated_at,
   }
+}
 
-  const handleEventAdded = (applicationId: string, event: Omit<ApplicationEvent, "id">) => {
-    setApplications((prevApps) =>
-      prevApps.map((app) => {
-        if (app.id !== applicationId) return app
+export default async function Home() {
+  const [applicationsData, growthLogsData] = await Promise.all([
+    getApplications(),
+    getGrowthLogs(),
+  ])
 
-        const newEventId = `e${applicationId}-${Date.now()}`
-        const newEvent: ApplicationEvent = {
-          ...event,
-          id: newEventId,
-        }
-
-        const updatedEvents = [...app.events, newEvent].sort((a, b) => {
-          const dateCompare = a.date.localeCompare(b.date)
-          if (dateCompare !== 0) return dateCompare
-          return a.startTime.localeCompare(b.startTime)
-        })
-
-        const futureConfirmed = updatedEvents.filter((e) => {
-          const eventDate = new Date(`${e.date}T${e.startTime}`)
-          return eventDate > new Date() && e.status === "confirmed"
-        })
-
-        const nextConfirmed = futureConfirmed[0]
-
-        return {
-          ...app,
-          events: updatedEvents,
-          scheduledDate: nextConfirmed?.date || app.scheduledDate,
-          startTime: nextConfirmed?.startTime || app.startTime,
-          endTime: nextConfirmed?.endTime || app.endTime,
-        }
-      }),
-    )
-  }
-
-  const handleEventUpdated = (applicationId: string, eventId: string, event: Omit<ApplicationEvent, "id">) => {
-    setApplications((prevApps) =>
-      prevApps.map((app) => {
-        if (app.id !== applicationId) return app
-
-        const updatedEvents = app.events
-          .map((e) => (e.id === eventId ? { ...event, id: eventId } : e))
-          .sort((a, b) => {
-            const dateCompare = a.date.localeCompare(b.date)
-            if (dateCompare !== 0) return dateCompare
-            return a.startTime.localeCompare(b.startTime)
-          })
-
-        const futureConfirmed = updatedEvents.filter((e) => {
-          const eventDate = new Date(`${e.date}T${e.startTime}`)
-          return eventDate > new Date() && e.status === "confirmed"
-        })
-
-        const nextConfirmed = futureConfirmed[0]
-
-        return {
-          ...app,
-          events: updatedEvents,
-          scheduledDate: nextConfirmed?.date || app.scheduledDate,
-          startTime: nextConfirmed?.startTime || app.startTime,
-          endTime: nextConfirmed?.endTime || app.endTime,
-        }
-      }),
-    )
-  }
-
-  const handleEventDeleted = (applicationId: string, eventId: string) => {
-    setApplications((prevApps) =>
-      prevApps.map((app) => {
-        if (app.id !== applicationId) return app
-
-        const updatedEvents = app.events
-          .filter((e) => e.id !== eventId)
-          .sort((a, b) => {
-            const dateCompare = a.date.localeCompare(b.date)
-            if (dateCompare !== 0) return dateCompare
-            return a.startTime.localeCompare(b.startTime)
-          })
-
-        const futureConfirmed = updatedEvents.filter((e) => {
-          const eventDate = new Date(`${e.date}T${e.startTime}`)
-          return eventDate > new Date() && e.status === "confirmed"
-        })
-
-        const nextConfirmed = futureConfirmed[0]
-
-        return {
-          ...app,
-          events: updatedEvents,
-          scheduledDate: nextConfirmed?.date || "",
-          startTime: nextConfirmed?.startTime || "",
-          endTime: nextConfirmed?.endTime || "",
-        }
-      }),
-    )
-  }
-
-  const selectedApplication = selectedApplicationId
-    ? applications.find((app) => app.id === selectedApplicationId)
-    : null
-
-  useEffect(() => {
-    if (selectedApplicationId) {
-      document.body.style.overflow = "hidden"
-      document.body.style.touchAction = "none"
-
-      return () => {
-        document.body.style.overflow = ""
-        document.body.style.touchAction = ""
-      }
-    }
-  }, [selectedApplicationId])
+  // Cast the data to the expected type with events
+  // The getApplications return type needs to be asserted or typed correctly
+  const applications = (applicationsData as any[]).map(mapApplicationToUI)
+  const growthLogs = growthLogsData.map(mapGrowthLogToUI)
 
   return (
-    <div className="min-h-screen bg-[#F5F6F8] overflow-x-hidden max-w-full">
-      <Header />
-      <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-6 overflow-x-hidden">
-        <CandidateSummary isMasked={isMasked} onToggleMask={() => setIsMasked(!isMasked)} />
-        <DailyQuestionCard />
-        <TodoSection isMasked={isMasked} />
-        <WeeklySchedule
-          isMasked={isMasked}
-          onEventClick={handleApplicationClick}
-          applications={ongoingApplications}
-          growthLogs={growthLogs}
-        />
-        <div className="mt-6">
-          <ApplicationTable
-            isMasked={isMasked}
-            sortMode={sortMode}
-            sortDirection={sortDirection}
-            onSortModeChange={handleSortModeChange}
-            onSortDirectionToggle={handleSortDirectionToggle}
-            onApplicationClick={handleApplicationClick}
-            applications={ongoingApplications}
-          />
-          <ApplicationCardList
-            isMasked={isMasked}
-            sortMode={sortMode}
-            sortDirection={sortDirection}
-            onSortModeChange={handleSortModeChange}
-            onSortDirectionToggle={handleSortDirectionToggle}
-            onApplicationClick={handleApplicationClick}
-            applications={ongoingApplications}
-          />
-        </div>
-      </main>
-      <FloatingActionButton onClick={() => setIsSheetOpen(true)} />
-      <NewOpportunityBottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
-      {selectedApplication && (
-        <ApplicationDetailModal
-          application={selectedApplication}
-          isMasked={isMasked}
-          isOpen={!!selectedApplicationId}
-          onClose={() => setSelectedApplicationId(null)}
-          onEventAdded={handleEventAdded}
-          onEventUpdated={handleEventUpdated}
-          onEventDeleted={handleEventDeleted}
-        />
-      )}
-    </div>
+    <HomePageClient 
+      initialApplications={applications}
+      initialGrowthLogs={growthLogs}
+    />
   )
 }
