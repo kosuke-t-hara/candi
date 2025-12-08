@@ -39,7 +39,7 @@ export default function SignupPage() {
         setSuccess(true)
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError('予期せぬエラーが発生しました。')
     } finally {
       setLoading(false)
     }
@@ -104,7 +104,7 @@ export default function SignupPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 pt-6">
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>

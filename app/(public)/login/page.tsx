@@ -30,13 +30,17 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setError(error.message)
+        if (error.message === 'Invalid login credentials') {
+          setError('メールアドレスまたはパスワードが正しくありません。')
+        } else {
+          setError('ログインに失敗しました。')
+        }
       } else {
         router.push('/')
         router.refresh()
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError('予期せぬエラーが発生しました。')
     } finally {
       setLoading(false)
     }
@@ -80,7 +84,7 @@ export default function LoginPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 pt-6">
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
