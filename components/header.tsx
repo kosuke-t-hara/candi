@@ -1,6 +1,19 @@
+"use client"
+
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 export function Header() {
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/login")
+    router.refresh()
+  }
+
   return (
     <header className="bg-[#1A1A1A] px-4 py-3">
       <div className="mx-auto max-w-5xl">
@@ -53,6 +66,13 @@ export function Header() {
               <span>👔</span>
               <span className="hidden sm:inline">Agent Preview</span>
             </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20"
+            >
+              <span>🚪</span>
+              <span className="hidden sm:inline">ログアウト</span>
+            </button>
           </div>
         </div>
       </div>
