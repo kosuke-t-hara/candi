@@ -2,10 +2,11 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { X, ChevronDown, ChevronUp, Plus, MoreVertical } from "lucide-react"
+import { useState, useEffect, useTransition } from "react"
+import { X, ChevronDown, ChevronUp, Plus, MoreVertical, Edit, Check } from "lucide-react"
 import type { Application, ApplicationEvent } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
+import { updateApplication } from "@/app/actions/applications"
 import { AddEventBottomSheet } from "./add-event-bottom-sheet"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
@@ -78,6 +79,25 @@ export function ApplicationDetailModal({
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchOffset, setTouchOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState("")
+
+  useEffect(() => {
+    if (isOpen) {
+      setEditedTitle(application.company)
+      setIsEditingTitle(false)
+    }
+  }, [isOpen, application.company])
+
+  const handleSaveTitle = () => {
+    if (!editedTitle.trim()) return
+    
+    startTransition(async () => {
+      await updateApplication(application.id, { company_name: editedTitle })
+      setIsEditingTitle(false)
+    })
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -214,9 +234,42 @@ export function ApplicationDetailModal({
             <div className="px-4 pb-4 md:px-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-[#1A1A1A] tracking-[0.25px]">
-                    {getDisplayCompanyName(application.company, isMasked)}
-                  </h2>
+                  {isEditingTitle ? (
+                    <div className="flex items-center gap-2">
+                       <input 
+                         type="text"
+                         value={editedTitle}
+                         onChange={(e) => setEditedTitle(e.target.value)}
+                         className="flex-1 text-xl font-bold text-[#1A1A1A] border-b-2 border-[#2F80ED] focus:outline-none bg-transparent"
+                         autoFocus
+                         onKeyDown={(e) => {
+                           if (e.key === 'Enter') handleSaveTitle()
+                           if (e.key === 'Escape') setIsEditingTitle(false)
+                         }}
+                       />
+                       <button 
+                         onClick={handleSaveTitle}
+                         disabled={isPending}
+                         className="p-1 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD]"
+                       >
+                         <Check className="h-5 w-5" />
+                       </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 group">
+                      <h2 className="text-xl font-bold text-[#1A1A1A] tracking-[0.25px]">
+                        {getDisplayCompanyName(application.company, isMasked)}
+                      </h2>
+                      {!isMasked && (
+                        <button 
+                          onClick={() => setIsEditingTitle(true)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-[#F5F6F8] text-[#9CA3AF]"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <p className="text-sm text-[#6B7280] mt-0.5">{application.position}</p>
                 </div>
                 <button onClick={handleClose} className="ml-4 rounded-full p-2 hover:bg-[#F5F6F8] transition-colors">

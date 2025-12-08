@@ -69,3 +69,19 @@ export async function updateApplicationStage(id: string, stage: Database['public
 
   revalidatePath('/')
 }
+
+export async function updateApplication(id: string, data: Database['public']['Tables']['applications']['Update']) {
+  const supabase = await createClient()
+
+  const { error } = await (supabase as any)
+    .from('applications')
+    .update(data)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error updating application:', error)
+    throw new Error('Failed to update application')
+  }
+
+  revalidatePath('/')
+}
