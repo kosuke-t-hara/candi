@@ -11,9 +11,40 @@ import { FloatingActionButton } from "@/components/floating-action-button"
 import { NewOpportunityBottomSheet } from "@/components/new-opportunity-bottom-sheet"
 import { WeeklySchedule } from "@/components/weekly-schedule"
 import { ApplicationDetailModal } from "@/components/application-detail-modal"
-import { createEvent } from "@/app/actions/events"
+import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import type { SortMode, SortDirection } from "@/lib/sort-utils"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
+import type { Database } from "@/lib/types/database"
+
+// Map Japanese event type labels to database enum values
+function mapEventTypeToKind(type: string): Database['public']['Tables']['application_events']['Row']['kind'] {
+  const mapping: Record<string, Database['public']['Tables']['application_events']['Row']['kind']> = {
+    "カジュアル面談": "casual_talk",
+    "書類選考": "screening_call",
+    "一次面接": "interview_1st",
+    "二次面接": "interview_2nd",
+    "三次面接": "interview_3rd",
+    "最終面接": "interview_final",
+    "オファー面談": "offer_meeting",
+    "その他": "other",
+  }
+  return mapping[type] || "other"
+}
+
+// Map database enum values to Japanese labels
+function mapKindToEventType(kind: string): string {
+  const mapping: Record<string, string> = {
+    "casual_talk": "カジュアル面談",
+    "screening_call": "書類選考",
+    "interview_1st": "一次面接",
+    "interview_2nd": "二次面接",
+    "interview_3rd": "三次面接",
+    "interview_final": "最終面接",
+    "offer_meeting": "オファー面談",
+    "other": "その他",
+  }
+  return mapping[kind] || kind
+}
 
 interface HomePageClientProps {
   initialApplications: Application[]
@@ -53,20 +84,34 @@ export function HomePageClient({ initialApplications, initialGrowthLogs }: HomeP
     startTransition(async () => {
       const formData = new FormData()
       formData.append("title", event.title || event.type)
-      formData.append("kind", "other") // Default to other for now
+      formData.append("kind", mapEventTypeToKind(event.type))
       formData.append("starts_at", `${event.date}T${event.startTime}:00`)
-      // Note: ends_at is not currently handled by createEvent action, might need update
+      formData.append("ends_at", `${event.date}T${event.endTime}:00`)
+      formData.append("outcome", event.status === "confirmed" ? "scheduled" : "scheduled")
+      formData.append("notes", event.note || "")
       
       await createEvent(applicationId, formData)
     })
   }
 
   const handleEventUpdated = (applicationId: string, eventId: string, event: Omit<ApplicationEvent, "id">) => {
-    console.log("Event updated locally", applicationId, eventId, event)
+    startTransition(async () => {
+      const formData = new FormData()
+      formData.append("title", event.title || event.type)
+      formData.append("kind", mapEventTypeToKind(event.type))
+      formData.append("starts_at", `${event.date}T${event.startTime}:00`)
+      formData.append("ends_at", `${event.date}T${event.endTime}:00`)
+      formData.append("outcome", event.status === "confirmed" ? "scheduled" : "scheduled")
+      formData.append("notes", event.note || "")
+      
+      await updateEvent(eventId, formData)
+    })
   }
 
   const handleEventDeleted = (applicationId: string, eventId: string) => {
-    console.log("Event deleted locally", applicationId, eventId)
+    startTransition(async () => {
+      await deleteEvent(eventId)
+    })
   }
 
   const selectedApplication = selectedApplicationId

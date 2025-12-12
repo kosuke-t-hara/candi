@@ -11,6 +11,7 @@ const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
 function formatDateDisplay(isoDate: string): string {
   const date = new Date(isoDate)
+  if (!isoDate || isNaN(date.getTime())) return "—"
   const month = date.getMonth() + 1
   const day = date.getDate()
   const weekday = WEEKDAYS[date.getDay()]

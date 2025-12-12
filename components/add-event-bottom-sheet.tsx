@@ -337,7 +337,7 @@ export function AddEventBottomSheet({
     return `${y}/${m}/${d}（${weekdays[dateObj.getDay()]}）`
   }
 
-  const isValid = date && startTime && endTime && startTime < endTime
+  const isValid = date && startTime && endTime
 
   if (!isOpen) return null
 

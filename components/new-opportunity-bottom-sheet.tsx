@@ -141,7 +141,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
       else if (stage.includes("面接")) stageValue = "interviewing"
       
       formData.append("stage", stageValue)
-      formData.append("status_note", JSON.stringify({ status, nextAction, interviewDate }))
+      formData.append("status_note", nextAction)
 
       await createApplication(formData)
       handleClose()

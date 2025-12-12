@@ -83,12 +83,17 @@ export function ApplicationDetailModal({
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState("")
 
+  const [isEditingMemo, setIsEditingMemo] = useState(false)
+  const [editedMemo, setEditedMemo] = useState("")
+
   useEffect(() => {
     if (isOpen) {
       setEditedTitle(application.company)
       setIsEditingTitle(false)
+      setEditedMemo(application.globalNote)
+      setIsEditingMemo(false)
     }
-  }, [isOpen, application.company])
+  }, [isOpen, application.company, application.globalNote])
 
   const handleSaveTitle = () => {
     if (!editedTitle.trim()) return
@@ -96,6 +101,13 @@ export function ApplicationDetailModal({
     startTransition(async () => {
       await updateApplication(application.id, { company_name: editedTitle })
       setIsEditingTitle(false)
+    })
+  }
+
+  const handleSaveMemo = () => {
+    startTransition(async () => {
+      await updateApplication(application.id, { status_note: editedMemo })
+      setIsEditingMemo(false)
     })
   }
 
@@ -430,13 +442,56 @@ export function ApplicationDetailModal({
 
             <div>
               <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 tracking-[0.25px]">この応募のメモ</h3>
-              <div className="rounded-[14px] bg-[#F5F6F8] p-4">
+              <div className="rounded-[14px] bg-[#F5F6F8] p-4 group relative">
                 {isMasked ? (
                   <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
+                ) : isEditingMemo ? (
+                   <div className="space-y-3">
+                     <textarea
+                       value={editedMemo}
+                       onChange={(e) => setEditedMemo(e.target.value)}
+                       className="w-full min-h-[100px] p-3 rounded-lg border border-[#E5E7EB] text-sm text-[#333] focus:outline-none focus:ring-2 focus:ring-[#2F80ED] bg-white resize-none"
+                       placeholder="メモを入力..."
+                       autoFocus
+                     />
+                     <div className="flex justify-end gap-2">
+                       <button
+                         onClick={() => {
+                           setIsEditingMemo(false)
+                           setEditedMemo(application.globalNote)
+                         }}
+                         className="px-3 py-1.5 text-xs font-medium text-[#6B7280] hover:bg-[#E5E7EB] rounded-md transition-colors"
+                         disabled={isPending}
+                       >
+                         キャンセル
+                       </button>
+                       <button
+                         onClick={handleSaveMemo}
+                         className="px-3 py-1.5 text-xs font-medium text-white bg-[#2F80ED] hover:bg-blue-600 rounded-md transition-colors shadow-sm"
+                         disabled={isPending}
+                       >
+                         {isPending ? "保存中..." : "保存"}
+                       </button>
+                     </div>
+                   </div>
                 ) : (
-                  <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
-                    {application.globalNote || "メモはまだありません"}
-                  </p>
+                  <>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => setIsEditingMemo(true)}
+                        className="p-2 rounded-full hover:bg-white/50 text-[#9CA3AF] hover:text-[#2F80ED] transition-colors"
+                        aria-label="メモを編集"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p 
+                      className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setIsEditingMemo(true)}
+                    >
+                      {application.globalNote || "メモはまだありません"}
+                    </p>
+                  </>
                 )}
               </div>
             </div>

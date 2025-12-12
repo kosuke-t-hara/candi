@@ -4,6 +4,21 @@ import { HomePageClient } from "@/components/home-page-client"
 import type { Application, GrowthLog, ApplicationEvent } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
 
+// Map database enum values to Japanese labels
+function mapKindToEventType(kind: string): string {
+  const mapping: Record<string, string> = {
+    "casual_talk": "カジュアル面談",
+    "screening_call": "書類選考",
+    "interview_1st": "一次面接",
+    "interview_2nd": "二次面接",
+    "interview_3rd": "三次面接",
+    "interview_final": "最終面接",
+    "offer_meeting": "オファー面談",
+    "other": "その他",
+  }
+  return mapping[kind] || kind
+}
+
 // Helper to map DB application to UI Application type
 function mapApplicationToUI(
   dbApp: Database['public']['Tables']['applications']['Row'] & { 
@@ -15,7 +30,7 @@ function mapApplicationToUI(
     date: e.starts_at.split('T')[0], // Assuming ISO string
     startTime: e.starts_at.split('T')[1]?.substring(0, 5) || "00:00",
     endTime: e.ends_at ? e.ends_at.split('T')[1]?.substring(0, 5) || "00:00" : "00:00",
-    type: e.kind, // Map kind to type label if needed, or use as is
+    type: mapKindToEventType(e.kind), // Map kind to Japanese label
     status: e.outcome === 'scheduled' ? 'confirmed' : 'candidate', // Simplified mapping
     title: e.title || undefined,
     note: e.notes || "",
@@ -39,7 +54,7 @@ function mapApplicationToUI(
     stepTotal: 5, // Placeholder
     rejectionStatus: "active", // Placeholder
     events: events,
-    globalNote: "",
+    globalNote: dbApp.status_note || "",
     todos: [], // Placeholder
   }
 }
