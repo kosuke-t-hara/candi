@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/lib/types/database'
 import { revalidatePath } from 'next/cache'
+import { deriveSelectionPhase } from '@/lib/selection-phase-utils'
 
 export async function getApplications() {
   const supabase = await createClient()
@@ -42,6 +43,7 @@ export async function createApplication(formData: FormData) {
     source: source || 'direct',
     stage: stage || 'research',
     status_note,
+    selection_phase: deriveSelectionPhase(stage || 'research'),
   }
   
   const { error } = await (supabase as any).from('applications').insert(newApplication)
@@ -59,7 +61,10 @@ export async function updateApplicationStage(id: string, stage: Database['public
 
   const { error } = await (supabase as any)
     .from('applications')
-    .update({ stage })
+    .update({ 
+      stage,
+      selection_phase: deriveSelectionPhase(stage)
+    })
     .eq('id', id)
 
   if (error) {

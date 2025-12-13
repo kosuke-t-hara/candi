@@ -41,6 +41,7 @@ export interface Application {
   stepCurrent: number
   stepTotal: number
   rejectionStatus: RejectionStatus
+  selectionPhase: number
 }
 
 export type GrowthLogCategory = "input" | "output" | "community" | "project" | "other"
@@ -79,6 +80,7 @@ export const applications: Application[] = [
     stepCurrent: 2,
     stepTotal: 5,
     rejectionStatus: "active",
+    selectionPhase: 3,
     events: [
       {
         id: "e1-1",
@@ -124,6 +126,7 @@ export const applications: Application[] = [
     stepCurrent: 1,
     stepTotal: 4,
     rejectionStatus: "active",
+    selectionPhase: 2,
     events: [
       {
         id: "e2-1",
@@ -156,6 +159,7 @@ export const applications: Application[] = [
     stepCurrent: 2,
     stepTotal: 5,
     rejectionStatus: "active",
+    selectionPhase: 3,
     events: [
       {
         id: "e3-1",
@@ -201,6 +205,7 @@ export const applications: Application[] = [
     stepCurrent: 1,
     stepTotal: 5,
     rejectionStatus: "active",
+    selectionPhase: 2,
     events: [
       {
         id: "e4-1",
@@ -233,6 +238,7 @@ export const applications: Application[] = [
     stepCurrent: 1,
     stepTotal: 4,
     rejectionStatus: "active",
+    selectionPhase: 2,
     events: [
       {
         id: "e5-1",
@@ -262,9 +268,10 @@ export const applications: Application[] = [
     sourceType: "agent",
     sourceLabel: "R社 田中",
     applicationStatus: "closed",
-    stepCurrent: 3,
+    stepCurrent: 5,
     stepTotal: 5,
     rejectionStatus: "rejected",
+    selectionPhase: 1,
     events: [
       {
         id: "e6-1",

@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { SortControls } from "./sort-controls"
-import { StepIndicator } from "./step-indicator"
+import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
@@ -123,12 +123,8 @@ export function ApplicationCardList({
                   </div>
                 )}
 
-                {/* Step Indicator */}
-                <StepIndicator
-                  stepCurrent={app.stepCurrent}
-                  stepTotal={app.stepTotal}
-                  rejectionStatus={app.rejectionStatus}
-                />
+                {/* Selection Indicator */}
+                <SelectionIndicator phase={app.selectionPhase} />
               </div>
             </motion.div>
           ))}

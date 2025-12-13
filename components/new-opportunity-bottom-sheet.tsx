@@ -56,20 +56,17 @@ const statusPresets: StatusPreset[] = [
 ]
 
 const stageOptions = ["ヘッドハンター面談", "カジュアル面談", "書類選考", "一次面接", "二次面接", "最終面接"]
-
 const statusOptions = ["こっちボール", "企業ボール", "調整中"]
-
 const positionSuggestions = ["プロダクトマネージャー", "PdM", "プロジェクトマネージャー"]
-
-const defaultHeadHunters: HeadHunter[] = ["FLUX 小池", "ビズリーチ", "Sun* 黒岡"]
 
 export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBottomSheetProps) {
   const [isPending, startTransition] = useTransition()
   const [source, setSource] = useState<SourceType>(null)
-  const [selectedHeadHunter, setSelectedHeadHunter] = useState<HeadHunter | null>(null)
-  const [isAddingNewHH, setIsAddingNewHH] = useState(false)
-  const [newHHName, setNewHHName] = useState("")
-  const [customHeadHunters, setCustomHeadHunters] = useState<string[]>([])
+  // const [selectedHeadHunter, setSelectedHeadHunter] = useState<HeadHunter | null>(null) // Removed
+  // const [isAddingNewHH, setIsAddingNewHH] = useState(false) // Removed
+  // const [newHHName, setNewHHName] = useState("") // Removed
+  // const [customHeadHunters, setCustomHeadHunters] = useState<string[]>([]) // Removed
+  const [sourceDetail, setSourceDetail] = useState("") // Added for free text input
 
   const [company, setCompany] = useState("")
   const [position, setPosition] = useState("")
@@ -80,13 +77,11 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
   const [nextAction, setNextAction] = useState("")
   const [interviewDate, setInterviewDate] = useState("")
 
-  const allHeadHunters = [...defaultHeadHunters, ...customHeadHunters]
+
 
   const resetForm = () => {
     setSource(null)
-    setSelectedHeadHunter(null)
-    setIsAddingNewHH(false)
-    setNewHHName("")
+    setSourceDetail("")
     setCompany("")
     setPosition("")
     setSelectedPreset(null)
@@ -111,14 +106,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
     }
   }
 
-  const handleAddNewHeadHunter = () => {
-    if (newHHName.trim()) {
-      setCustomHeadHunters((prev) => [...prev, newHHName.trim()])
-      setSelectedHeadHunter(newHHName.trim())
-      setNewHHName("")
-      setIsAddingNewHH(false)
-    }
-  }
+
 
   const handleSave = () => {
     startTransition(async () => {
@@ -141,7 +129,13 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
       else if (stage.includes("面接")) stageValue = "interviewing"
       
       formData.append("stage", stageValue)
-      formData.append("status_note", nextAction)
+      
+      // Append source detail to status_note if present
+      let finalStatusNote = nextAction
+      if (sourceDetail) {
+        finalStatusNote = `${finalStatusNote}\n(紹介: ${sourceDetail})`
+      }
+      formData.append("status_note", finalStatusNote)
 
       await createApplication(formData)
       handleClose()
@@ -193,8 +187,8 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
                   key={option}
                   onClick={() => {
                     setSource(option)
-                    if (option !== "ヘッドハンター") {
-                      setSelectedHeadHunter(null)
+                    if (option !== "ヘッドハンター" && option !== "リファラル") {
+                      setSourceDetail("")
                     }
                   }}
                   className={`rounded-full px-4 py-2 text-sm transition-colors ${
@@ -206,47 +200,16 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
               ))}
             </div>
 
-            {/* Head Hunter Selection */}
-            {source === "ヘッドハンター" && (
+            {/* Source Detail Input */}
+            {(source === "ヘッドハンター" || source === "リファラル") && (
               <div className="mt-3">
-                <div className="flex flex-wrap gap-2">
-                  {allHeadHunters.map((hh) => (
-                    <button
-                      key={hh}
-                      onClick={() => setSelectedHeadHunter(hh)}
-                      className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
-                        selectedHeadHunter === hh
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {hh}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setIsAddingNewHH(true)}
-                    className="rounded-full border-2 border-dashed border-gray-300 px-3 py-1.5 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600"
-                  >
-                    新しいヘッドハンターを追加…
-                  </button>
-                </div>
-                {isAddingNewHH && (
-                  <div className="mt-2 flex gap-2">
-                    <input
-                      type="text"
-                      value={newHHName}
-                      onChange={(e) => setNewHHName(e.target.value)}
-                      placeholder="例）Sun*田中さん"
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={handleAddNewHeadHunter}
-                      className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-                    >
-                      追加
-                    </button>
-                  </div>
-                )}
+                <input
+                  type="text"
+                  value={sourceDetail}
+                  onChange={(e) => setSourceDetail(e.target.value)}
+                  placeholder={source === "ヘッドハンター" ? "例）Sun*田中さん、ビズリーチなど" : "例）元同僚の佐藤さん"}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
             )}
           </div>

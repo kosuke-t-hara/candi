@@ -3,6 +3,7 @@ import { getGrowthLogs } from "@/app/actions/growth"
 import { HomePageClient } from "@/components/home-page-client"
 import type { Application, GrowthLog, ApplicationEvent } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
+import { deriveSelectionPhase } from "@/lib/selection-phase-utils"
 
 // Map database enum values to Japanese labels
 function mapKindToEventType(kind: string): string {
@@ -56,6 +57,7 @@ function mapApplicationToUI(
     events: events,
     globalNote: dbApp.status_note || "",
     todos: [], // Placeholder
+    selectionPhase: dbApp.selection_phase || deriveSelectionPhase(dbApp.stage),
   }
 }
 

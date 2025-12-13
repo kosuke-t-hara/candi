@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { SortControls } from "./sort-controls"
-import { StepIndicator } from "./step-indicator"
+import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
@@ -83,13 +83,11 @@ export function ApplicationTable({
                   }`}
                 >
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-[#1A1A1A]">{getDisplayCompanyName(app.company, isMasked)}</div>
-                    <div className="text-xs text-[#6B7280]">{app.position}</div>
-                    <StepIndicator
-                      stepCurrent={app.stepCurrent}
-                      stepTotal={app.stepTotal}
-                      rejectionStatus={app.rejectionStatus}
-                    />
+                    <div className="font-semibold text-[#1A1A1A] whitespace-nowrap">{getDisplayCompanyName(app.company, isMasked)}</div>
+                    <div className="text-xs text-[#6B7280] whitespace-nowrap">{app.position}</div>
+                    <div className="mt-2">
+                      <SelectionIndicator phase={app.selectionPhase} />
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-block rounded-full bg-[#F3F4F6] px-2.5 py-0.5 text-xs font-medium text-[#555]">

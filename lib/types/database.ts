@@ -46,6 +46,7 @@ export interface Database {
           priority: number | null
           status_note: string | null
           archived: boolean
+          selection_phase: number
           created_at: string
           updated_at: string
         }
@@ -59,6 +60,7 @@ export interface Database {
           priority?: number | null
           status_note?: string | null
           archived?: boolean
+          selection_phase?: number
           created_at?: string
           updated_at?: string
         }
@@ -72,6 +74,7 @@ export interface Database {
           priority?: number | null
           status_note?: string | null
           archived?: boolean
+          selection_phase?: number
           created_at?: string
           updated_at?: string
         }
