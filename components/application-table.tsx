@@ -6,6 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
+import { getStageLabel } from "@/lib/selection-phase-utils"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -101,7 +102,7 @@ export function ApplicationTable({
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-block rounded-full bg-[#E8F1FF] px-2.5 py-0.5 text-xs font-medium text-[#2F80ED]">
-                      {app.stage}
+                      {getStageLabel(app.stage)}
                     </span>
                   </td>
                   <td className="px-4 py-3">

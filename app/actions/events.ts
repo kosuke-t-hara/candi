@@ -21,6 +21,9 @@ export async function getEvents(applicationId: string) {
   return data
 }
 
+import { deriveAppUpdateFromEvent } from '@/lib/selection-phase-utils'
+import { updateApplication } from '@/app/actions/applications'
+
 export async function createEvent(applicationId: string, formData: FormData) {
   const supabase = await createClient()
   
@@ -51,6 +54,28 @@ export async function createEvent(applicationId: string, formData: FormData) {
   if (error) {
     console.error('Error creating event:', error)
     throw new Error('Failed to create event')
+  }
+
+  // Automatically update application stage if needed
+  if (kind) {
+    const update = deriveAppUpdateFromEvent(kind)
+    if (update) {
+      // Fetch current application to compare
+      const { data: currentApp } = await (supabase as any)
+        .from('applications')
+        .select('selection_phase')
+        .eq('id', applicationId)
+        .single()
+      
+      // Update if current phase is lower than the implied phase
+      // Or if current phase is undefined (safety check)
+      if (currentApp && (currentApp.selection_phase < update.selection_phase)) {
+        await updateApplication(applicationId, {
+          stage: update.stage,
+          selection_phase: update.selection_phase
+        })
+      }
+    }
   }
 
   revalidatePath('/')

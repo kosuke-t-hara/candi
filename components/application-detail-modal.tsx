@@ -8,6 +8,7 @@ import type { Application, ApplicationEvent } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { updateApplication } from "@/app/actions/applications"
 import { AddEventBottomSheet } from "./add-event-bottom-sheet"
+import { getStageLabel } from "@/lib/selection-phase-utils"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -298,7 +299,7 @@ export function ApplicationDetailModal({
                   {getSourceTypeLabel(application.sourceType)}
                 </span>
                 <span className="inline-block rounded-full bg-[#E8F1FF] px-3 py-1 text-xs font-medium text-[#2F80ED]">
-                  {application.stage}
+                  {getStageLabel(application.stage)}
                 </span>
                 <span
                   className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
