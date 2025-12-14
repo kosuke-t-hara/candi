@@ -6,7 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
-import { getStageLabel } from "@/lib/selection-phase-utils"
+import { getStageLabel, getDisplayEventLabel } from "@/lib/selection-phase-utils"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -59,11 +59,9 @@ export function ApplicationTable({
         <table className="w-full">
           <thead>
             <tr className="bg-[#1A1A1A] text-left text-sm text-white">
-              <th className="px-4 py-3 font-medium">企業</th>
-              <th className="px-4 py-3 font-medium">紹介元</th>
-              <th className="px-4 py-3 font-medium">ステージ</th>
-              <th className="px-4 py-3 font-medium">状況</th>
-              <th className="px-4 py-3 font-medium">次の予定</th>
+              <th className="px-4 py-3 font-medium min-w-[200px] w-1/4">企業</th>
+              <th className="px-4 py-3 font-medium min-w-[120px]">紹介元</th>
+              <th className="px-4 py-3 font-medium min-w-[80px]">状況</th>
               <th className="px-4 py-3 font-medium">アクション / メモ</th>
             </tr>
           </thead>
@@ -86,8 +84,9 @@ export function ApplicationTable({
                   <td className="px-4 py-3">
                     <div className="font-semibold text-[#1A1A1A] whitespace-nowrap">{getDisplayCompanyName(app.company, isMasked)}</div>
                     <div className="text-xs text-[#6B7280] whitespace-nowrap">{app.position}</div>
-                    <div className="mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <SelectionIndicator phase={app.selectionPhase} />
+                      <span className="text-xs text-[#6B7280]">{getDisplayEventLabel(app.events, app.stage)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -99,11 +98,6 @@ export function ApplicationTable({
                         {getDisplaySourceLabel(app.sourceType, app.sourceLabel, isMasked)}
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-block rounded-full bg-[#E8F1FF] px-2.5 py-0.5 text-xs font-medium text-[#2F80ED]">
-                      {getStageLabel(app.stage)}
-                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -120,14 +114,7 @@ export function ApplicationTable({
                       {app.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-[#333]">{formatDateDisplay(app.scheduledDate)}</div>
-                    {app.startTime && app.endTime ? (
-                      <div className="text-xs text-[#6B7280]">{formatTimeRange(app.startTime, app.endTime)}</div>
-                    ) : (
-                      <div className="text-xs text-[#A1A1AA]">—</div>
-                    )}
-                  </td>
+
                   <td className="px-4 py-3">
                     {app.nextAction && app.nextAction !== "なし" && (
                       <div className="text-sm text-[#333]">{app.nextAction}</div>

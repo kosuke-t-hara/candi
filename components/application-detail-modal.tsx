@@ -84,13 +84,19 @@ export function ApplicationDetailModal({
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState("")
 
+  const [isEditingPosition, setIsEditingPosition] = useState(false)
+  const [editedPosition, setEditedPosition] = useState("")
+
   const [isEditingMemo, setIsEditingMemo] = useState(false)
   const [editedMemo, setEditedMemo] = useState("")
 
   useEffect(() => {
     if (isOpen) {
       setEditedTitle(application.company)
+      setEditedTitle(application.company)
       setIsEditingTitle(false)
+      setEditedPosition(application.position)
+      setIsEditingPosition(false)
       setEditedMemo(application.globalNote)
       setIsEditingMemo(false)
     }
@@ -102,6 +108,15 @@ export function ApplicationDetailModal({
     startTransition(async () => {
       await updateApplication(application.id, { company_name: editedTitle })
       setIsEditingTitle(false)
+    })
+  }
+
+  const handleSavePosition = () => {
+    if (!editedPosition.trim()) return
+
+    startTransition(async () => {
+      await updateApplication(application.id, { position_title: editedPosition })
+      setIsEditingPosition(false)
     })
   }
 
@@ -268,6 +283,7 @@ export function ApplicationDetailModal({
                          <Check className="h-5 w-5" />
                        </button>
                     </div>
+
                   ) : (
                     <div className="flex items-center gap-2 group">
                       <h2 className="text-xl font-bold text-[#1A1A1A] tracking-[0.25px]">
@@ -276,14 +292,48 @@ export function ApplicationDetailModal({
                       {!isMasked && (
                         <button 
                           onClick={() => setIsEditingTitle(true)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-[#F5F6F8] text-[#9CA3AF]"
+                          className="transition-opacity p-1 rounded-full hover:bg-[#F5F6F8] text-[#9CA3AF]"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                       )}
                     </div>
                   )}
-                  <p className="text-sm text-[#6B7280] mt-0.5">{application.position}</p>
+
+                  {isEditingPosition ? (
+                    <div className="flex items-center gap-2 mt-1">
+                       <input 
+                         type="text"
+                         value={editedPosition}
+                         onChange={(e) => setEditedPosition(e.target.value)}
+                         className="flex-1 text-sm text-[#6B7280] border-b border-[#2F80ED] focus:outline-none bg-transparent"
+                         autoFocus
+                         onKeyDown={(e) => {
+                           if (e.key === 'Enter') handleSavePosition()
+                           if (e.key === 'Escape') setIsEditingPosition(false)
+                         }}
+                       />
+                       <button 
+                         onClick={handleSavePosition}
+                         disabled={isPending}
+                         className="p-0.5 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD]"
+                       >
+                         <Check className="h-4 w-4" />
+                       </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 group mt-0.5">
+                      <p className="text-sm text-[#6B7280]">{application.position}</p>
+                      {!isMasked && (
+                        <button 
+                          onClick={() => setIsEditingPosition(true)}
+                          className="transition-opacity p-1 rounded-full hover:bg-[#F5F6F8] text-[#9CA3AF]"
+                        >
+                          <Edit className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <button onClick={handleClose} className="ml-4 rounded-full p-2 hover:bg-[#F5F6F8] transition-colors">
                   <X className="h-5 w-5 text-[#6B7280]" />

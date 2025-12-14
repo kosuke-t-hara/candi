@@ -6,7 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
-import { getStageLabel } from "@/lib/selection-phase-utils"
+import { getStageLabel, getDisplayEventLabel } from "@/lib/selection-phase-utils"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -85,9 +85,7 @@ export function ApplicationCardList({
                   <span className="inline-block rounded-full bg-[#F3F4F6] px-2.5 py-0.5 text-xs font-medium text-[#555]">
                     {getSourceTypeLabel(app.sourceType)}
                   </span>
-                  <span className="inline-block rounded-full bg-[#E8F1FF] px-2.5 py-0.5 text-xs font-medium text-[#2F80ED]">
-                    {getStageLabel(app.stage)}
-                  </span>
+
                   <span
                     className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       app.status === "確定"
@@ -110,6 +108,12 @@ export function ApplicationCardList({
                   </p>
                 )}
 
+                {/* Selection Indicator Row */}
+                <div className="flex items-center gap-2 py-1">
+                  <SelectionIndicator phase={app.selectionPhase} />
+                  <span className="text-xs text-[#6B7280]">{getDisplayEventLabel(app.events, app.stage)}</span>
+                </div>
+
                 <div className="text-sm text-[#333]">
                   <span className="text-[#555]">予定：</span>
                   {formatDateDisplay(app.scheduledDate)}
@@ -126,8 +130,6 @@ export function ApplicationCardList({
                   </div>
                 )}
 
-                {/* Selection Indicator */}
-                <SelectionIndicator phase={app.selectionPhase} />
               </div>
             </motion.div>
           ))}

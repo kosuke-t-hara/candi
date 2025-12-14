@@ -1,4 +1,5 @@
 import type { Database } from './types/database'
+import type { ApplicationEvent } from './mock-data'
 
 /**
  * Derives the selection phase (1-5) from the application stage
@@ -115,4 +116,42 @@ export function deriveAppUpdateFromEvent(eventKind: string): {
     default:
       return null
   }
+}
+
+/**
+ * Get the display label for the application card/row.
+ * Logic:
+ * 1. If there are future events, use the one closest to now (upcoming).
+ * 2. If no future events, use the past event closest to now (most recent).
+ * 3. Fallback to stage label if no events.
+ */
+export function getDisplayEventLabel(events: ApplicationEvent[], currentStage: string): string {
+  if (!events || events.length === 0) {
+    return getStageLabel(currentStage)
+  }
+
+  const now = new Date()
+  
+  // Helper to parse event date
+  const parseEventDate = (e: ApplicationEvent) => {
+    // combine date and startTime for precision, default to end of day if no time?
+    // actually mock data has time.
+    return new Date(`${e.date}T${e.startTime || '00:00'}`)
+  }
+
+  const sortedEvents = events.map(e => ({
+    event: e,
+    date: parseEventDate(e)
+  })).sort((a, b) => a.date.getTime() - b.date.getTime())
+
+  // Find first future event
+  const futureEvent = sortedEvents.find(item => item.date >= now)
+
+  if (futureEvent) {
+    return futureEvent.event.type
+  }
+
+  // If no future event, take the last one (most recent past)
+  const lastEvent = sortedEvents[sortedEvents.length - 1]
+  return lastEvent.event.type
 }
