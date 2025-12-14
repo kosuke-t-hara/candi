@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
 export default function SignupPage() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,6 +31,9 @@ export default function SignupPage() {
         password,
         options: {
           emailRedirectTo: `${location.origin}/auth/callback`,
+          data: {
+            full_name: name,
+          },
         },
       })
 
@@ -102,6 +106,17 @@ export default function SignupPage() {
                 {error}
               </div>
             )}
+            <div className="space-y-2">
+              <Label htmlFor="name">お名前</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="山田 太郎"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">メールアドレス</Label>
               <Input

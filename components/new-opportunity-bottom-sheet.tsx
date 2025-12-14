@@ -9,7 +9,6 @@ interface NewOpportunityBottomSheetProps {
 }
 
 type SourceType = "ヘッドハンター" | "ダイレクト" | "リファラル" | "自己応募" | null
-type HeadHunter = "FLUX 小池" | "ビズリーチ" | "Sun* 黒岡" | string
 
 interface StatusPreset {
   id: string
@@ -207,7 +206,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
                   type="text"
                   value={sourceDetail}
                   onChange={(e) => setSourceDetail(e.target.value)}
-                  placeholder={source === "ヘッドハンター" ? "例）Sun*田中さん、ビズリーチなど" : "例）元同僚の佐藤さん"}
+                  placeholder={source === "ヘッドハンター" ? "例）Candi-Agentsなど" : "例）元同僚の佐藤さん"}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
@@ -221,7 +220,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
               type="text"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              placeholder="例）LayerX"
+              placeholder="例）株式会社Candi"
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>

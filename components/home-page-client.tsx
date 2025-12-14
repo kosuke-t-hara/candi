@@ -49,9 +49,10 @@ function mapKindToEventType(kind: string): string {
 interface HomePageClientProps {
   initialApplications: Application[]
   initialGrowthLogs: GrowthLog[]
+  userProfile: Database['public']['Tables']['profiles']['Row'] | null
 }
 
-export function HomePageClient({ initialApplications, initialGrowthLogs }: HomePageClientProps) {
+export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile }: HomePageClientProps) {
   const [isPending, startTransition] = useTransition()
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isMasked, setIsMasked] = useState(false)
@@ -65,7 +66,51 @@ export function HomePageClient({ initialApplications, initialGrowthLogs }: HomeP
     setApplications(initialApplications)
   }, [initialApplications])
 
+
+
   const ongoingApplications = applications.filter((app) => app.applicationStatus === "ongoing")
+  
+  // Calculate stats for CandidateSummary
+  const ongoingCount = ongoingApplications.length
+  
+  const weeklyActivitiesCount = applications.reduce((acc, app) => {
+    const today = new Date()
+    const oneWeekLater = new Date(today)
+    oneWeekLater.setDate(today.getDate() + 7)
+    
+    // Check events
+    const hasWeeklyEvent = app.events.some(e => {
+      const eventDate = new Date(e.date)
+      return eventDate >= today && eventDate <= oneWeekLater
+    })
+    
+    return acc + (hasWeeklyEvent ? 1 : 0) // Count applications that have activity? Or count total events?
+    // User asked for "この期間の転職活動...の件数". 
+    // "Number of job changing activities in this period". 
+    // Usually means number of events. Let's count total events in the week.
+  }, 0)
+
+  // Re-calculating correctly for events count
+  const weeklyEventCount = applications.reduce((acc, app) => {
+    const today = new Date()
+    today.setHours(0,0,0,0) // Normalize today
+    const oneWeekLater = new Date(today)
+    oneWeekLater.setDate(today.getDate() + 7)
+    
+    const eventsInWeek = app.events.filter(e => {
+      const eventDate = new Date(e.date)
+      return eventDate >= today && eventDate <= oneWeekLater
+    }).length
+    
+    return acc + eventsInWeek
+  }, 0)
+
+  const handleScrollToApplications = () => {
+    const element = document.getElementById("ongoing-applications")
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+    }
+  }
 
   const handleSortModeChange = (mode: SortMode) => {
     setSortMode(mode)
@@ -134,7 +179,14 @@ export function HomePageClient({ initialApplications, initialGrowthLogs }: HomeP
     <div className="min-h-screen bg-[#F5F6F8] overflow-x-hidden max-w-full">
       <Header />
       <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-6 overflow-x-hidden">
-        <CandidateSummary isMasked={isMasked} onToggleMask={() => setIsMasked(!isMasked)} />
+        <CandidateSummary 
+          isMasked={isMasked} 
+          onToggleMask={() => setIsMasked(!isMasked)} 
+          profile={userProfile}
+          ongoingCount={ongoingCount}
+          weeklyCount={weeklyEventCount}
+          onOngoingClick={handleScrollToApplications}
+        />
         <DailyQuestionCard />
         <TodoSection isMasked={isMasked} />
         <WeeklySchedule
@@ -143,7 +195,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs }: HomeP
           applications={ongoingApplications}
           growthLogs={initialGrowthLogs}
         />
-        <div className="mt-6">
+        <div id="ongoing-applications" className="mt-6">
           <ApplicationTable
             isMasked={isMasked}
             sortMode={sortMode}
