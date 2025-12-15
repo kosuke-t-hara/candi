@@ -85,7 +85,7 @@ export interface Database {
           user_id: string
           application_id: string
           title: string | null
-          kind: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'other'
+          kind: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
           starts_at: string
           ends_at: string | null
           location: string | null
@@ -99,7 +99,7 @@ export interface Database {
           user_id: string
           application_id: string
           title?: string | null
-          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'other'
+          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
           starts_at: string
           ends_at?: string | null
           location?: string | null
@@ -113,7 +113,7 @@ export interface Database {
           user_id?: string
           application_id?: string
           title?: string | null
-          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'other'
+          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
           starts_at?: string
           ends_at?: string | null
           location?: string | null

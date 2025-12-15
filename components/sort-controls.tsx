@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { ChevronUp, ChevronDown } from "lucide-react"
 
-export type SortMode = "nextEvent" | "stage" | "myBall"
+export type SortMode = "nextEvent" | "stage" | "myBall" | "archived"
 export type SortDirection = "asc" | "desc"
 
 interface SortControlsProps {
@@ -61,6 +61,17 @@ export function SortControls({ sortMode, sortDirection, onSortModeChange, onSort
         )}
       >
         こっちボール優先
+      </button>
+      <button
+        onClick={() => onSortModeChange("archived")}
+        className={cn(
+          "rounded-full px-3 py-1 text-xs border transition-colors duration-150",
+          sortMode === "archived"
+            ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+            : "bg-white text-[#555] border-[#E5E7EB] hover:border-[#A1A1AA]",
+        )}
+      >
+        終了済み
       </button>
     </div>
   )

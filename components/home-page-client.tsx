@@ -12,7 +12,7 @@ import { NewOpportunityBottomSheet } from "@/components/new-opportunity-bottom-s
 import { WeeklySchedule } from "@/components/weekly-schedule"
 import { ApplicationDetailModal } from "@/components/application-detail-modal"
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
-import type { SortMode, SortDirection } from "@/lib/sort-utils"
+import { SortControls, type SortMode, type SortDirection } from "@/components/sort-controls"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
 
@@ -26,6 +26,8 @@ function mapEventTypeToKind(type: string): Database['public']['Tables']['applica
     "三次面接": "interview_3rd",
     "最終面接": "interview_final",
     "オファー面談": "offer_meeting",
+    "お見送り": "rejected",
+    "辞退": "withdrawn",
     "その他": "other",
   }
   return mapping[type] || "other"
@@ -41,6 +43,8 @@ function mapKindToEventType(kind: string): string {
     "interview_3rd": "三次面接",
     "interview_final": "最終面接",
     "offer_meeting": "オファー面談",
+    "rejected": "お見送り",
+    "withdrawn": "辞退",
     "other": "その他",
   }
   return mapping[kind] || kind
@@ -68,7 +72,12 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
 
 
 
-  const ongoingApplications = applications.filter((app) => app.applicationStatus === "ongoing")
+  const activeApplications = sortMode === "archived" 
+    ? applications.filter((app) => app.applicationStatus === "closed")
+    : applications.filter((app) => app.applicationStatus === "ongoing")
+
+  // Rename variable for clarity in the rest of the component
+  const ongoingApplications = activeApplications
   
   // Calculate stats for CandidateSummary
   const ongoingCount = ongoingApplications.length

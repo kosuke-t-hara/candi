@@ -112,6 +112,12 @@ export function deriveAppUpdateFromEvent(eventKind: string): {
       // Offer interview usually implies reaching the final/offer stage.
       // We map this to 'offered' (Phase 5) to signify the milestone.
       return { stage: 'offered', selection_phase: 5 }
+
+    case 'rejected':
+      return { stage: 'rejected', selection_phase: 1 }
+
+    case 'withdrawn':
+      return { stage: 'withdrawn', selection_phase: 1 }
       
     default:
       return null

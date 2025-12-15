@@ -16,6 +16,8 @@ function mapKindToEventType(kind: string): string {
     "interview_3rd": "三次面接",
     "interview_final": "最終面接",
     "offer_meeting": "オファー面談",
+    "rejected": "お見送り",
+    "withdrawn": "辞退",
     "other": "その他",
   }
   return mapping[kind] || kind

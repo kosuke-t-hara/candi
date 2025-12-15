@@ -390,14 +390,16 @@ export function ApplicationDetailModal({
                 </span>
                 <span
                   className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                    application.status === "確定"
+                    application.applicationStatus === "closed"
+                     ? "bg-[#F3F4F6] text-[#A1A1AA]"
+                     : application.status === "確定"
                       ? "bg-[#E7F8ED] text-[#34A853]"
                       : application.status === "相手ボール"
                         ? "bg-[#FFF7DA] text-[#E6B400]"
                         : "bg-white text-[#A1A1AA] shadow-sm"
                   }`}
                 >
-                  {application.status}
+                  {application.applicationStatus === "closed" ? "終了" : application.status}
                 </span>
               </div>
 

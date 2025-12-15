@@ -63,16 +63,22 @@ export async function createEvent(applicationId: string, formData: FormData) {
       // Fetch current application to compare
       const { data: currentApp } = await (supabase as any)
         .from('applications')
-        .select('selection_phase')
+        .select('selection_phase, stage')
         .eq('id', applicationId)
         .single()
       
-      // Update if current phase is lower than the implied phase
-      // Or if current phase is undefined (safety check)
-      if (currentApp && (currentApp.selection_phase < update.selection_phase)) {
+      const shouldUpdate = 
+        currentApp && 
+        (currentApp.selection_phase < update.selection_phase || 
+         update.stage === 'rejected' || 
+         update.stage === 'withdrawn')
+
+      if (shouldUpdate) {
+        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn'
         await updateApplication(applicationId, {
           stage: update.stage,
-          selection_phase: update.selection_phase
+          selection_phase: update.selection_phase,
+          archived: isArchived
         })
       }
     }
@@ -97,7 +103,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const outcome = formData.get('outcome') as Database['public']['Tables']['application_events']['Row']['outcome'] | null
   const notes = formData.get('notes') as string | null
   
-  const { error } = await (supabase as any).from('application_events').update({
+  const { data, error } = await (supabase as any).from('application_events').update({
     title,
     kind: kind || 'other',
     starts_at,
@@ -105,10 +111,41 @@ export async function updateEvent(eventId: string, formData: FormData) {
     outcome: outcome || 'scheduled',
     notes: notes || null,
   }).eq('id', eventId)
+  .select('application_id')
+  .single()
 
   if (error) {
     console.error('Error updating event:', error)
     throw new Error('Failed to update event')
+  }
+
+  // Automatically update application stage if needed
+  if (kind && data?.application_id) {
+    const applicationId = data.application_id
+    const update = deriveAppUpdateFromEvent(kind)
+    if (update) {
+       // Fetch current application to compare
+       const { data: currentApp } = await (supabase as any)
+       .from('applications')
+       .select('selection_phase, stage')
+       .eq('id', applicationId)
+       .single()
+     
+     const shouldUpdate = 
+       currentApp && 
+       (currentApp.selection_phase < update.selection_phase || 
+        update.stage === 'rejected' || 
+        update.stage === 'withdrawn')
+
+     if (shouldUpdate) {
+        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn'
+       await updateApplication(applicationId, {
+         stage: update.stage,
+         selection_phase: update.selection_phase,
+         archived: isArchived
+       })
+     }
+    }
   }
 
   revalidatePath('/')

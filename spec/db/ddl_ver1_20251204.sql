@@ -87,6 +87,8 @@ create type public.application_event_kind as enum (
   'interview_3rd',
   'interview_final',
   'offer_meeting',
+  'rejected',
+  'withdrawn',
   'other'
 );
 

@@ -1,6 +1,6 @@
 import type { Application } from "./mock-data"
 
-export type SortMode = "nextEvent" | "stage" | "myBall"
+export type SortMode = "nextEvent" | "stage" | "myBall" | "archived"
 export type SortDirection = "asc" | "desc"
 
 const stageOrder = ["ヘッドハンター面談", "カジュアル面談", "書類選考", "一次面接", "二次面接", "最終面接"] as const

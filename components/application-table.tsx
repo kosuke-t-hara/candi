@@ -102,7 +102,9 @@ export function ApplicationTable({
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        app.status === "確定"
+                        app.applicationStatus === "closed"
+                         ? "bg-[#F3F4F6] text-[#A1A1AA]"
+                         : app.status === "確定"
                           ? "bg-[#E7F8ED] text-[#34A853]"
                           : app.status === "相手ボール"
                             ? "bg-[#FFF7DA] text-[#E6B400]"
@@ -111,7 +113,7 @@ export function ApplicationTable({
                               : "bg-[#F3F4F6] text-[#A1A1AA]"
                       }`}
                     >
-                      {app.status}
+                      {app.applicationStatus === "closed" ? "終了" : app.status}
                     </span>
                   </td>
 
