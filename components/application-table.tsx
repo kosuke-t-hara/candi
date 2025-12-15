@@ -86,7 +86,7 @@ export function ApplicationTable({
                     <div className="text-xs text-[#6B7280] whitespace-nowrap">{app.position}</div>
                     <div className="mt-2 flex items-center gap-2">
                       <SelectionIndicator phase={app.selectionPhase} isArchived={app.applicationStatus === "closed"} />
-                      <span className="text-xs text-[#6B7280]">{getDisplayEventLabel(app.events, app.stage)}</span>
+                      <span className="text-xs text-[#6B7280]" suppressHydrationWarning>{getDisplayEventLabel(app.events, app.stage)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">

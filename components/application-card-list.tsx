@@ -113,7 +113,7 @@ export function ApplicationCardList({
                 {/* Selection Indicator Row */}
                 <div className="flex items-center gap-2 py-1">
                   <SelectionIndicator phase={app.selectionPhase} isArchived={app.applicationStatus === "closed"} />
-                  <span className="text-xs text-[#6B7280]">{getDisplayEventLabel(app.events, app.stage)}</span>
+                  <span className="text-xs text-[#6B7280]" suppressHydrationWarning>{getDisplayEventLabel(app.events, app.stage)}</span>
                 </div>
 
                 <div className="text-sm text-[#333]">
