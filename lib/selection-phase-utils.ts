@@ -125,6 +125,62 @@ export function deriveAppUpdateFromEvent(eventKind: string): {
 }
 
 /**
+ * Derives the overall application status from a list of events.
+ * Used when recalculating status after event deletion.
+ */
+export function deriveStatusFromEvents(events: Array<{ kind: string }>): {
+  stage: Database['public']['Tables']['applications']['Row']['stage'],
+  selection_phase: number,
+  archived: boolean
+} {
+  // Check for rejection/withdrawal first
+  // We prioritize the most recent termination if valid, or just presence.
+  // Simple logic: if ANY rejected/withdrawn exists, the app is closed.
+  const terminationEvent = events.find(e => e.kind === 'rejected' || e.kind === 'withdrawn')
+  
+  if (terminationEvent) {
+    // If terminated, we want to know the max phase reached to preserve the indicator.
+    const maxPhase = events.reduce((max, e) => {
+        const update = deriveAppUpdateFromEvent(e.kind)
+        // Ignore rejected/withdrawn for phase calculation to report "progress before termination"
+        if (update && e.kind !== 'rejected' && e.kind !== 'withdrawn') {
+            return Math.max(max, update.selection_phase)
+        }
+        return max
+    }, 1)
+
+    return {
+        stage: terminationEvent.kind as any,
+        selection_phase: maxPhase,
+        archived: true
+    }
+  }
+
+  // Calculate max phase from active events
+  let maxPhase = 1
+  let maxStage: Database['public']['Tables']['applications']['Row']['stage'] = 'research' // default
+
+  events.forEach(e => {
+        const update = deriveAppUpdateFromEvent(e.kind)
+        if (update) {
+            // Update if strictly greater? Or greater/equal?
+            // If equal (e.g. multiple interviews), stage name is same ('interviewing').
+            // Exception: 'interview_final' is phase 4. 'interview_1st' is phase 3.
+            if (update.selection_phase > maxPhase) {
+                maxPhase = update.selection_phase
+                maxStage = update.stage
+            }
+        }
+  })
+
+  return {
+    stage: maxStage,
+    selection_phase: maxPhase,
+    archived: false
+  }
+}
+
+/**
  * Get the display label for the application card/row.
  * Logic:
  * 1. If there are future events, use the one closest to now (upcoming).

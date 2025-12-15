@@ -21,7 +21,7 @@ export async function getEvents(applicationId: string) {
   return data
 }
 
-import { deriveAppUpdateFromEvent } from '@/lib/selection-phase-utils'
+import { deriveAppUpdateFromEvent, deriveStatusFromEvents } from '@/lib/selection-phase-utils'
 import { updateApplication } from '@/app/actions/applications'
 
 export async function createEvent(applicationId: string, formData: FormData) {
@@ -160,11 +160,35 @@ export async function deleteEvent(eventId: string) {
     throw new Error('User not authenticated')
   }
 
-  const { error } = await (supabase as any).from('application_events').delete().eq('id', eventId)
+  const { data: deletedEvent, error } = await (supabase as any)
+    .from('application_events')
+    .delete()
+    .eq('id', eventId)
+    .select('application_id')
+    .single()
 
   if (error) {
     console.error('Error deleting event:', error)
     throw new Error('Failed to delete event')
+  }
+
+  // Recalculate and sync application status
+  if (deletedEvent?.application_id) {
+    const applicationId = deletedEvent.application_id
+    
+    const { data: remainingEvents } = await (supabase as any)
+      .from('application_events')
+      .select('kind')
+      .eq('application_id', applicationId)
+    
+    if (remainingEvents) {
+      const newStatus = deriveStatusFromEvents(remainingEvents)
+      await updateApplication(applicationId, {
+        stage: newStatus.stage,
+        selection_phase: newStatus.selection_phase,
+        archived: newStatus.archived
+      })
+    }
   }
 
   revalidatePath('/')

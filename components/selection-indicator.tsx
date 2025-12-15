@@ -7,11 +7,11 @@ export function SelectionIndicator({ phase, isArchived = false }: SelectionIndic
   const baseDot = "h-3 w-3 rounded-full transition-transform duration-150"
 
   const phaseColors: Record<number, string> = {
-    1: "bg-gray-400 border-gray-400",
+    1: "bg-green-400 border-green-400",
     2: "bg-blue-400 border-blue-400",
-    3: "bg-amber-400 border-amber-400",
+    3: "bg-purple-400 border-purple-400",
     4: "bg-orange-500 border-orange-500",
-    5: "bg-green-500 border-green-500",
+    5: "bg-red-500 border-red-500",
   }
 
   return (
@@ -23,7 +23,7 @@ export function SelectionIndicator({ phase, isArchived = false }: SelectionIndic
         
         if (isActive) {
             if (isArchived) {
-                colorClass = "bg-[#D1D5DB] border-[#D1D5DB] shadow-[0_0_0_1px_rgba(0,0,0,0.04)]" // Gray for archived
+                colorClass = "bg-gray-400 border-gray-400 shadow-[0_0_0_1px_rgba(0,0,0,0.04)]" // Gray for archived
             } else {
                 colorClass = `${phaseColors[phase] || "bg-gray-400 border-gray-400"} shadow-[0_0_0_1px_rgba(0,0,0,0.04)]`
             }
