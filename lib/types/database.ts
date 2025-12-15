@@ -55,7 +55,7 @@ export interface Database {
           user_id: string
           company_name: string
           position_title?: string | null
-          source?: 'agent' | 'direct' | 'self' | 'referral' | 'other'
+          source: 'agent' | 'direct' | 'self' | 'referral' | 'other'
           stage?: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn'
           priority?: number | null
           status_note?: string | null

@@ -3,6 +3,8 @@ alter table public.profiles enable row level security;
 alter table public.applications enable row level security;
 alter table public.application_events enable row level security;
 alter table public.growth_logs enable row level security;
+
+-- 以降は未作成
 alter table public.value_snapshots enable row level security;
 alter table public.insights enable row level security;
 alter table public.daily_answers enable row level security;
@@ -69,6 +71,10 @@ create policy "Users can update own growth logs"
 create policy "Users can delete own growth logs"
   on public.growth_logs for delete
   using ( auth.uid() = user_id );
+
+
+----- 以降は未作成
+
 
 -- Value Snapshots
 create policy "Users can view own value snapshots"

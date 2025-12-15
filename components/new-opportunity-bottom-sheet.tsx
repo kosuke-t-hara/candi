@@ -157,12 +157,12 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
 
       {/* Bottom Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 flex max-h-[80vh] flex-col rounded-t-2xl bg-white animate-in slide-in-from-bottom duration-300">
+      <div className="w-full max-w-[640px] flex max-h-[80vh] flex-col rounded-t-3xl bg-white animate-in slide-in-from-bottom duration-300 shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <h2 className="text-lg font-bold text-gray-900">新しい案件を追加</h2>

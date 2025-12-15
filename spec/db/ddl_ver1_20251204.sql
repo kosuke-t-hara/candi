@@ -23,6 +23,8 @@ create type public.application_source as enum (
   'agent',
   'direct',
   'scout',
+  'self',
+  'referral',
   'other'
 );
 
@@ -46,9 +48,12 @@ create table public.applications (
   priority smallint,           -- 優先度(1=高〜5=低など)
   status_note text,            -- 状況メモ
   archived boolean not null default false,
+  selection_phase smallint not null default 1,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+COMMENT ON COLUMN public.applications.selection_phase IS 'Selection phase (1-5): 1=research, 2=screening, 3=interviewing, 4=final, 5=offered';
 
 create index applications_user_id_idx on public.applications(user_id);
 create index applications_user_stage_idx on public.applications(user_id, stage);

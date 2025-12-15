@@ -90,6 +90,16 @@ export function ApplicationDetailModal({
   const [isEditingMemo, setIsEditingMemo] = useState(false)
   const [editedMemo, setEditedMemo] = useState("")
 
+  const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false)
+
+  const handleUpdateSource = (source: string) => {
+    startTransition(async () => {
+      // @ts-ignore
+      await updateApplication(application.id, { source })
+      setIsSourceMenuOpen(false)
+    })
+  }
+
   useEffect(() => {
     if (isOpen) {
       setEditedTitle(application.company)
@@ -345,9 +355,36 @@ export function ApplicationDetailModal({
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-6 space-y-6">
             <div className="rounded-[14px] bg-[#F5F6F8] p-4 space-y-3">
               <div className="flex flex-wrap gap-2">
-                <span className="inline-block rounded-full bg-white px-3 py-1 text-xs font-medium text-[#555] shadow-sm">
-                  {getSourceTypeLabel(application.sourceType)}
-                </span>
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => !isMasked && setIsSourceMenuOpen(!isSourceMenuOpen)}
+                    disabled={isMasked}
+                    className={`inline-block rounded-full bg-white px-3 py-1 text-xs font-medium text-[#555] shadow-sm ${
+                      !isMasked ? "cursor-pointer hover:bg-gray-50" : "cursor-default"
+                    }`}
+                  >
+                    {getSourceTypeLabel(application.sourceType)}
+                  </button>
+                  
+                  {isSourceMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsSourceMenuOpen(false)} />
+                      <div className="absolute top-full left-0 z-50 mt-1 w-32 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-lg">
+                        {(["agent", "direct", "self", "referral", "other"] as const).map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => handleUpdateSource(type)}
+                            className={`w-full px-4 py-2 text-left text-xs hover:bg-gray-50 ${
+                              application.sourceType === type ? "font-bold text-blue-600 bg-blue-50" : "text-gray-700"
+                            }`}
+                          >
+                            {getSourceTypeLabel(type)}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
                 <span className="inline-block rounded-full bg-[#E8F1FF] px-3 py-1 text-xs font-medium text-[#2F80ED]">
                   {getStageLabel(application.stage)}
                 </span>
