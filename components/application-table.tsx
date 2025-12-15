@@ -85,7 +85,7 @@ export function ApplicationTable({
                     <div className="font-semibold text-[#1A1A1A] whitespace-nowrap">{getDisplayCompanyName(app.company, isMasked)}</div>
                     <div className="text-xs text-[#6B7280] whitespace-nowrap">{app.position}</div>
                     <div className="mt-2 flex items-center gap-2">
-                      <SelectionIndicator phase={app.selectionPhase} />
+                      <SelectionIndicator phase={app.selectionPhase} isArchived={app.applicationStatus === "closed"} />
                       <span className="text-xs text-[#6B7280]">{getDisplayEventLabel(app.events, app.stage)}</span>
                     </div>
                   </td>

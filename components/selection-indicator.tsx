@@ -1,8 +1,9 @@
 type SelectionIndicatorProps = {
   phase: number // 1〜5 を想定
+  isArchived?: boolean
 }
 
-export function SelectionIndicator({ phase }: SelectionIndicatorProps) {
+export function SelectionIndicator({ phase, isArchived = false }: SelectionIndicatorProps) {
   const baseDot = "h-3 w-3 rounded-full transition-transform duration-150"
 
   const phaseColors: Record<number, string> = {
@@ -17,14 +18,21 @@ export function SelectionIndicator({ phase }: SelectionIndicatorProps) {
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((i) => {
         const isActive = i <= phase
-        const activeClass = isActive
-          ? `${phaseColors[phase] || "bg-gray-400 border-gray-400"} shadow-[0_0_0_1px_rgba(0,0,0,0.04)]`
-          : "bg-gray-200 border border-gray-300"
+        
+        let colorClass = "bg-gray-200 border border-gray-300" // Inactive default
+        
+        if (isActive) {
+            if (isArchived) {
+                colorClass = "bg-[#D1D5DB] border-[#D1D5DB] shadow-[0_0_0_1px_rgba(0,0,0,0.04)]" // Gray for archived
+            } else {
+                colorClass = `${phaseColors[phase] || "bg-gray-400 border-gray-400"} shadow-[0_0_0_1px_rgba(0,0,0,0.04)]`
+            }
+        }
 
         return (
           <div
             key={i}
-            className={`${baseDot} ${activeClass} hover:scale-125`}
+            className={`${baseDot} ${colorClass} hover:scale-125`}
           />
         )
       })}
