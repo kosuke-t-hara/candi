@@ -500,7 +500,7 @@ export function ApplicationDetailModal({
                               <p className="text-xs text-[#A1A1AA] italic">メモ：Private</p>
                             ) : (
                               <>
-                                <p className={`text-sm text-[#333] ${!isExpanded ? "line-clamp-2" : ""}`}>
+                                <p className={`text-sm text-[#333] whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
                                   {event.note}
                                 </p>
                                 {event.note.length > 100 && (
