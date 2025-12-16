@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useTransition } from "react"
-import { X, ChevronDown, ChevronUp, Plus, MoreVertical, Edit, Check } from "lucide-react"
+import { X, ChevronDown, ChevronUp, Plus, MoreVertical, Edit, Check, ExternalLink } from "lucide-react"
 import type { Application, ApplicationEvent } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { updateApplication } from "@/app/actions/applications"
@@ -523,6 +523,22 @@ export function ApplicationDetailModal({
                                 )}
                               </>
                             )}
+                          </div>
+                        )}
+
+                        {event.links && event.links.length > 0 && (
+                          <div className="mt-2">
+                            <a 
+                              href={event.links[0].url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 p-1.5 -ml-1.5 rounded-md hover:bg-[#E7F8ED] text-xs font-medium text-[#2F80ED] transition-colors group/link"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              <span className="truncate max-w-[240px]">
+                                {event.links[0].label || event.links[0].url}
+                              </span>
+                            </a>
                           </div>
                         )}
                       </div>
