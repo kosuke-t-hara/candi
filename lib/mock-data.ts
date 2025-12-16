@@ -3,6 +3,12 @@ export type ApplicationEventStatus = "confirmed" | "candidate"
 export type ApplicationLifecycleStatus = "ongoing" | "closed"
 export type RejectionStatus = "active" | "rejected"
 
+export interface ApplicationLink {
+  id: string
+  url: string
+  label: string | null
+}
+
 export interface ApplicationEvent {
   id: string
   date: string // "YYYY-MM-DD"
@@ -13,6 +19,7 @@ export interface ApplicationEvent {
   title?: string
   person?: string
   note: string
+  links?: ApplicationLink[]
 }
 
 export interface ApplicationTodo {
@@ -42,6 +49,7 @@ export interface Application {
   stepTotal: number
   rejectionStatus: RejectionStatus
   selectionPhase: number
+  links?: ApplicationLink[]
 }
 
 export type GrowthLogCategory = "input" | "output" | "community" | "project" | "other"

@@ -4,6 +4,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import type { ApplicationEvent, ApplicationEventStatus } from "@/lib/mock-data"
+import { LinkSection } from "./link-section"
+import { addEventLink, deleteEventLink } from "@/app/actions/links"
 
 export type EventSheetMode = "add" | "edit"
 
@@ -479,6 +481,22 @@ export function AddEventBottomSheet({
                 className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[14px] text-sm focus:outline-none focus:ring-2 focus:ring-[#2F80ED] focus:border-transparent resize-none"
               />
             </div>
+
+            {/* Links (Only in Edit mode) */}
+            {mode === "edit" && existingEvent && (
+              <div className="pt-2 border-t border-[#E5E7EB]">
+                <LinkSection 
+                  links={existingEvent.links || []}
+                  onAddLink={async (url, label) => {
+                    await addEventLink(existingEvent.id, url, label)
+                  }}
+                  onDeleteLink={async (id) => {
+                    await deleteEventLink(id)
+                  }}
+                  title="イベントのリンク"
+                />
+              </div>
+            )}
           </div>
 
           <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] px-5 py-4 md:px-6 flex gap-3 justify-between">

@@ -26,7 +26,10 @@ function mapKindToEventType(kind: string): string {
 // Helper to map DB application to UI Application type
 function mapApplicationToUI(
   dbApp: Database['public']['Tables']['applications']['Row'] & { 
-    events: Database['public']['Tables']['application_events']['Row'][] 
+    events: (Database['public']['Tables']['application_events']['Row'] & {
+      links: Database['public']['Tables']['application_event_links']['Row'][]
+    })[] 
+    links: Database['public']['Tables']['application_links']['Row'][]
   }
 ): Application {
   const events: ApplicationEvent[] = dbApp.events.map(e => ({
@@ -38,7 +41,10 @@ function mapApplicationToUI(
     status: e.outcome === 'scheduled' ? 'confirmed' : 'candidate', // Simplified mapping
     title: e.title || undefined,
     note: e.notes || "",
+    links: e.links?.map(l => ({ id: l.id, url: l.url, label: l.label })) || [],
   }))
+
+  const appLinks = dbApp.links?.map(l => ({ id: l.id, url: l.url, label: l.label })) || []
 
   return {
     id: dbApp.id,
@@ -61,6 +67,7 @@ function mapApplicationToUI(
     globalNote: dbApp.status_note || "",
     todos: [], // Placeholder
     selectionPhase: dbApp.selection_phase || deriveSelectionPhase(dbApp.stage),
+    links: appLinks,
   }
 }
 

@@ -9,7 +9,7 @@ export async function getEvents(applicationId: string) {
   
   const { data, error } = await supabase
     .from('application_events')
-    .select('*')
+    .select('*, links:application_event_links(*)')
     .eq('application_id', applicationId)
     .order('starts_at', { ascending: true })
 

@@ -9,6 +9,8 @@ import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from
 import { updateApplication } from "@/app/actions/applications"
 import { AddEventBottomSheet } from "./add-event-bottom-sheet"
 import { getStageLabel } from "@/lib/selection-phase-utils"
+import { LinkSection } from "./link-section"
+import { addApplicationLink, deleteApplicationLink } from "@/app/actions/links"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -584,6 +586,18 @@ export function ApplicationDetailModal({
                   </>
                 )}
               </div>
+            </div>
+
+            <div>
+              <LinkSection 
+                links={application.links || []}
+                onAddLink={async (url, label) => {
+                  await addApplicationLink(application.id, url, label)
+                }}
+                onDeleteLink={async (id) => {
+                  await deleteApplicationLink(id)
+                }}
+              />
             </div>
 
             {application.todos.length > 0 && (

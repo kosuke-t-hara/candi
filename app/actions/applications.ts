@@ -10,7 +10,7 @@ export async function getApplications() {
   
   const { data, error } = await supabase
     .from('applications')
-    .select('*, events:application_events(*)')
+    .select('*, events:application_events(*, links:application_event_links(*)), links:application_links(*)')
     .order('created_at', { ascending: false })
 
   if (error) {
