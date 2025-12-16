@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useTransition } from "react"
 import { createApplication } from "@/app/actions/applications"
+import { addApplicationLink } from "@/app/actions/links"
+import type { ApplicationLink } from "@/lib/mock-data"
+import { LinkSection } from "./link-section"
 
 interface NewOpportunityBottomSheetProps {
   isOpen: boolean
@@ -66,6 +69,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
   // const [newHHName, setNewHHName] = useState("") // Removed
   // const [customHeadHunters, setCustomHeadHunters] = useState<string[]>([]) // Removed
   const [sourceDetail, setSourceDetail] = useState("") // Added for free text input
+  const [pendingLinks, setPendingLinks] = useState<ApplicationLink[]>([])
 
   const [company, setCompany] = useState("")
   const [position, setPosition] = useState("")
@@ -89,6 +93,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
     setStatus("")
     setNextAction("")
     setInterviewDate("")
+    setPendingLinks([])
   }
 
   const handleClose = () => {
@@ -136,7 +141,14 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
       }
       formData.append("status_note", finalStatusNote)
 
-      await createApplication(formData)
+      const newApp = await createApplication(formData)
+      
+      if (newApp && pendingLinks.length > 0) {
+        for (const link of pendingLinks) {
+          await addApplicationLink(newApp.id, link.url, link.label || undefined)
+        }
+      }
+
       handleClose()
     })
   }
@@ -333,6 +345,25 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
               value={interviewDate}
               onChange={(e) => setInterviewDate(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Links */}
+          <div className="mb-6">
+            <LinkSection 
+              links={pendingLinks}
+              onAddLink={async (url, label) => {
+                const newLink: ApplicationLink = { 
+                  id: crypto.randomUUID(), 
+                  url, 
+                  label: label || null 
+                }
+                setPendingLinks(prev => [...prev, newLink])
+              }}
+              onDeleteLink={async (id) => {
+                setPendingLinks(prev => prev.filter(l => l.id !== id))
+              }}
+              title="関連リンク"
             />
           </div>
         </div>

@@ -46,7 +46,7 @@ export async function createApplication(formData: FormData) {
     selection_phase: deriveSelectionPhase(stage || 'research'),
   }
   
-  const { error } = await (supabase as any).from('applications').insert(newApplication)
+  const { data, error } = await (supabase as any).from('applications').insert(newApplication).select().single()
 
   if (error) {
     console.error('Error creating application:', error)
@@ -54,6 +54,7 @@ export async function createApplication(formData: FormData) {
   }
 
   revalidatePath('/')
+  return data
 }
 
 export async function updateApplicationStage(id: string, stage: Database['public']['Tables']['applications']['Row']['stage']) {

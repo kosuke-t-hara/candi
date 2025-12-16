@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
-import type { ApplicationEvent, ApplicationEventStatus } from "@/lib/mock-data"
+import type { ApplicationEvent, ApplicationEventStatus, ApplicationLink } from "@/lib/mock-data"
 import { LinkSection } from "./link-section"
 import { addEventLink, deleteEventLink } from "@/app/actions/links"
 
@@ -222,6 +222,7 @@ export function AddEventBottomSheet({
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchOffset, setTouchOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [pendingLinks, setPendingLinks] = useState<ApplicationLink[]>([])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0]
@@ -268,12 +269,14 @@ export function AddEventBottomSheet({
         setTitle(existingEvent.title || "")
         setNote(existingEvent.note || "")
         setEndTimeManuallySet(true)
+        setPendingLinks([])
       } else {
         const roundedStart = roundUpTo15Minutes()
         setStartTime(roundedStart)
         const calculatedEnd = addMinutesToTime(roundedStart, 60)
         setEndTime(calculatedEnd)
         setEndTimeManuallySet(false)
+        setPendingLinks([])
       }
     }
   }, [isOpen, mode, existingEvent])
@@ -294,6 +297,7 @@ export function AddEventBottomSheet({
       setTouchStart(null)
       setTouchOffset(0)
       setIsDragging(false)
+      setPendingLinks([])
     }, 250)
   }
 
@@ -308,6 +312,7 @@ export function AddEventBottomSheet({
       endTime,
       title: title || undefined,
       note,
+      links: pendingLinks,
     }
 
     onSave(newEvent)
@@ -482,21 +487,32 @@ export function AddEventBottomSheet({
               />
             </div>
 
-            {/* Links (Only in Edit mode) */}
-            {mode === "edit" && existingEvent && (
-              <div className="pt-2 border-t border-[#E5E7EB]">
-                <LinkSection 
-                  links={existingEvent.links || []}
-                  onAddLink={async (url, label) => {
+            {/* Links */}
+            <div className="pt-2 border-t border-[#E5E7EB]">
+              <LinkSection 
+                links={mode === "edit" && existingEvent ? (existingEvent.links || []) : pendingLinks}
+                onAddLink={async (url, label) => {
+                  if (mode === "edit" && existingEvent) {
                     await addEventLink(existingEvent.id, url, label)
-                  }}
-                  onDeleteLink={async (id) => {
+                  } else {
+                    const newLink: ApplicationLink = { 
+                      id: crypto.randomUUID(), 
+                      url, 
+                      label: label || null 
+                    }
+                    setPendingLinks(prev => [...prev, newLink])
+                  }
+                }}
+                onDeleteLink={async (id) => {
+                  if (mode === "edit") {
                     await deleteEventLink(id)
-                  }}
-                  title="イベントのリンク"
-                />
-              </div>
-            )}
+                  } else {
+                    setPendingLinks(prev => prev.filter(l => l.id !== id))
+                  }
+                }}
+                title="イベントのリンク"
+              />
+            </div>
           </div>
 
           <div className="sticky bottom-0 bg-white border-t border-[#E5E7EB] px-5 py-4 md:px-6 flex gap-3 justify-between">

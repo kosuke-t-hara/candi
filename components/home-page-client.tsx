@@ -12,6 +12,7 @@ import { NewOpportunityBottomSheet } from "@/components/new-opportunity-bottom-s
 import { WeeklySchedule } from "@/components/weekly-schedule"
 import { ApplicationDetailModal } from "@/components/application-detail-modal"
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
+import { addEventLink } from "@/app/actions/links"
 import { SortControls, type SortMode, type SortDirection } from "@/components/sort-controls"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
@@ -144,7 +145,13 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       formData.append("outcome", event.status === "confirmed" ? "scheduled" : "scheduled")
       formData.append("notes", event.note || "")
       
-      await createEvent(applicationId, formData)
+      const newEvent = await createEvent(applicationId, formData)
+
+      if (newEvent && event.links && event.links.length > 0) {
+        for (const link of event.links) {
+          await addEventLink(newEvent.id, link.url, link.label || undefined)
+        }
+      }
     })
   }
 

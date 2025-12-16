@@ -40,7 +40,7 @@ export async function createEvent(applicationId: string, formData: FormData) {
   const outcome = formData.get('outcome') as Database['public']['Tables']['application_events']['Row']['outcome'] | null
   const notes = formData.get('notes') as string | null
   
-  const { error } = await (supabase as any).from('application_events').insert({
+  const { data: newEvent, error } = await (supabase as any).from('application_events').insert({
     user_id: user.id,
     application_id: applicationId,
     title,
@@ -49,7 +49,7 @@ export async function createEvent(applicationId: string, formData: FormData) {
     ends_at: ends_at || null,
     outcome: outcome || 'scheduled',
     notes: notes || null,
-  })
+  }).select().single()
 
   if (error) {
     console.error('Error creating event:', error)
@@ -85,6 +85,7 @@ export async function createEvent(applicationId: string, formData: FormData) {
   }
 
   revalidatePath('/')
+  return newEvent
 }
 
 export async function updateEvent(eventId: string, formData: FormData) {
