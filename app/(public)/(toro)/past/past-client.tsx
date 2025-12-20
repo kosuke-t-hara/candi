@@ -16,7 +16,16 @@ interface PastClientProps {
 
 export default function PastClient({ entries }: PastClientProps) {
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null)
+  const [isClosing, setIsClosing] = useState(false)
   const router = useRouter()
+
+  const handleClose = () => {
+    setIsClosing(true)
+    setTimeout(() => {
+      setSelectedEntry(null)
+      setIsClosing(false)
+    }, 300) // Adjusted to match transition duration
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
@@ -71,13 +80,19 @@ export default function PastClient({ entries }: PastClientProps) {
       {/* Modal */}
       {selectedEntry && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-500"
-          onClick={() => setSelectedEntry(null)}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-6 transition-opacity duration-300 ease-linear ${
+            isClosing ? 'opacity-0' : 'opacity-100'
+          }`}
+          onClick={handleClose}
         >
-          <div className="absolute inset-0 bg-white/40 backdrop-blur-md" />
+          <div className={`absolute inset-0 bg-white/40 transition-all duration-300 ease-linear ${
+            isClosing ? 'backdrop-blur-none' : 'backdrop-blur-sm'
+          }`} />
           
           <div 
-            className="relative w-full max-w-xl max-h-[80vh] bg-white/80 shadow-2xl shadow-black/5 rounded-2xl overflow-hidden animate-in zoom-in-95 duration-500 flex flex-col"
+            className={`relative w-full max-w-xl max-h-[80vh] bg-white/80 shadow-2xl shadow-black/5 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ease-out ${
+              isClosing ? 'scale-[0.98] opacity-0' : 'scale-100 opacity-100 animate-in fade-in zoom-in-95'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-black/[0.03]">
@@ -85,7 +100,7 @@ export default function PastClient({ entries }: PastClientProps) {
                 {formatDate(selectedEntry.created_at)}
               </div>
               <button 
-                onClick={() => setSelectedEntry(null)}
+                onClick={handleClose}
                 className="text-black/20 hover:text-black/60 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -101,3 +116,5 @@ export default function PastClient({ entries }: PastClientProps) {
     </>
   )
 }
+
+
