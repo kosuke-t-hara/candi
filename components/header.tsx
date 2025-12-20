@@ -39,6 +39,13 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <Link
+              href="/"
+              className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-light text-white/40 transition-colors hover:bg-white/10 hover:text-white/60"
+            >
+              <span>📒</span>
+              <span className="hidden sm:inline">Toro</span>
+            </Link>
+            <Link
               href="/career-os"
               className="flex items-center gap-1.5 rounded-lg bg-[#F3F4F6]/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#F3F4F6]/20"
             >
