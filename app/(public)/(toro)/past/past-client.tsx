@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { X } from 'lucide-react'
+import { X, Archive, RotateCcw } from 'lucide-react'
+import { archiveToroEntry, unarchiveToroEntry } from '@/app/actions/toro'
 
 interface Entry {
   id: string
@@ -12,11 +13,14 @@ interface Entry {
 
 interface PastClientProps {
   entries: Entry[]
+  isArchivedView?: boolean
 }
 
-export default function PastClient({ entries }: PastClientProps) {
+export default function PastClient({ entries, isArchivedView = false }: PastClientProps) {
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null)
   const [isClosing, setIsClosing] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const router = useRouter()
 
   const handleClose = () => {
@@ -24,7 +28,36 @@ export default function PastClient({ entries }: PastClientProps) {
     setTimeout(() => {
       setSelectedEntry(null)
       setIsClosing(false)
-    }, 300) // Adjusted to match transition duration
+      setIsConfirming(false)
+    }, 300)
+  }
+
+  const handleArchive = async () => {
+    if (!selectedEntry) return
+    setIsProcessing(true)
+    try {
+      await archiveToroEntry(selectedEntry.id)
+      handleClose()
+    } catch (error) {
+      console.error('Failed to archive:', error)
+      alert('エラーが発生しました。')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleUnarchive = async () => {
+    if (!selectedEntry) return
+    setIsProcessing(true)
+    try {
+      await unarchiveToroEntry(selectedEntry.id)
+      handleClose()
+    } catch (error) {
+      console.error('Failed to unarchive:', error)
+      alert('エラーが発生しました。')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -41,9 +74,11 @@ export default function PastClient({ entries }: PastClientProps) {
     <>
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-light tracking-widest text-black/70">過去</h1>
+          <h1 className="text-2xl font-light tracking-widest text-black/70">
+            {isArchivedView ? 'しまったもの' : '過去'}
+          </h1>
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => isArchivedView ? router.push('/past') : router.push('/')}
             className="text-xs text-black/20 hover:text-black/40 transition-colors"
           >
             戻る
@@ -52,7 +87,7 @@ export default function PastClient({ entries }: PastClientProps) {
 
         {entries.length === 0 ? (
           <div className="text-center py-24 text-black/20 font-light tracking-widest">
-            まだ、なにも。
+            {isArchivedView ? 'なにも、しまっていません。' : 'まだ、なにも。'}
           </div>
         ) : (
           <div className="space-y-6">
@@ -73,6 +108,17 @@ export default function PastClient({ entries }: PastClientProps) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!isArchivedView && (
+          <div className="flex justify-center pt-12">
+            <button
+              onClick={() => router.push('/past?view=archived')}
+              className="text-[10px] text-black/10 hover:text-black/30 tracking-[0.2em] transition-all font-light"
+            >
+              しまったもの
+            </button>
           </div>
         )}
       </div>
@@ -102,13 +148,65 @@ export default function PastClient({ entries }: PastClientProps) {
               <button 
                 onClick={handleClose}
                 className="text-black/20 hover:text-black/60 transition-colors"
+                disabled={isProcessing}
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             
-            <div className="p-8 overflow-y-auto font-light leading-relaxed text-black/70 whitespace-pre-wrap">
+            <div className="p-8 pb-4 overflow-y-auto font-light leading-relaxed text-black/70 whitespace-pre-wrap flex-1">
               {selectedEntry.content}
+            </div>
+
+            <div className="p-6 pt-0 flex justify-end">
+              {isArchivedView ? (
+                <button
+                  onClick={handleUnarchive}
+                  disabled={isProcessing}
+                  className="text-xs text-black/30 hover:text-black/60 transition-colors font-light tracking-widest flex items-center gap-2"
+                >
+                  {isProcessing ? '...' : (
+                    <>
+                      <RotateCcw className="w-3 h-3" />
+                      戻す
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="flex items-center gap-4 transition-all duration-300">
+                  {isConfirming ? (
+                    <div className="flex items-center gap-6 animate-in fade-in slide-in-from-right-2">
+                       <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] text-black/40 font-light tracking-widest">しまいますか。</span>
+                        <span className="text-[8px] text-black/20 font-light tracking-tighter">あとで戻せます。</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={handleArchive}
+                          disabled={isProcessing}
+                          className="text-xs text-black/60 hover:text-black/90 transition-colors font-light tracking-widest uppercase"
+                        >
+                          {isProcessing ? '...' : 'しまう'}
+                        </button>
+                        <button
+                          onClick={() => setIsConfirming(false)}
+                          disabled={isProcessing}
+                          className="text-xs text-black/20 hover:text-black/40 transition-colors font-light tracking-widest uppercase"
+                        >
+                          やめる
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setIsConfirming(true)}
+                      className="text-xs text-black/20 hover:text-black/40 transition-colors font-light tracking-widest flex items-center gap-2"
+                    >
+                      しまう
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -116,5 +214,6 @@ export default function PastClient({ entries }: PastClientProps) {
     </>
   )
 }
+
 
 

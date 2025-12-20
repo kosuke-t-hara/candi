@@ -30,7 +30,7 @@ export async function createToroEntry(content: string) {
   return data
 }
 
-export async function getToroEntries() {
+export async function getToroEntries(showArchived: boolean = false) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,15 +39,56 @@ export async function getToroEntries() {
     return []
   }
 
-  const { data, error } = await (supabase as any)
+  let query = (supabase as any)
     .from('toro_entries')
     .select('*')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
+  if (showArchived) {
+    query = query.not('archived_at', 'is', null)
+  } else {
+    query = query.is('archived_at', null)
+  }
+
+  const { data, error } = await query
+
   if (error) {
-    console.error('Error fetching toro entries:', error)
+    console.error('Error fetching toro entries:', JSON.stringify(error, null, 2))
     return []
   }
 
   return data
+}
+
+export async function archiveToroEntry(id: string) {
+  const supabase = await createClient()
+  
+  const { error } = await (supabase as any)
+    .from('toro_entries')
+    .update({ archived_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error archiving entry:', error)
+    throw new Error('Failed to archive entry')
+  }
+
+  revalidatePath('/past')
+}
+
+export async function unarchiveToroEntry(id: string) {
+  const supabase = await createClient()
+  
+  const { error } = await (supabase as any)
+    .from('toro_entries')
+    .update({ archived_at: null })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error unarchiving entry:', error)
+    throw new Error('Failed to unarchive entry')
+  }
+
+  revalidatePath('/past')
 }
