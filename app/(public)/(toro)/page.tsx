@@ -5,10 +5,10 @@ export default function ToroHome() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12 animate-in fade-in duration-1000">
       <div className="space-y-4">
         <h1 className="text-4xl md:text-5xl font-extralight tracking-widest text-black/80">
-          Toro
+          Toro Notes
         </h1>
         <p className="text-sm md:text-base text-black/50 font-light tracking-wide italic">
-          書かなくても、ここにいていいですよ。
+          書かなくてもいい。
         </p>
       </div>
 
@@ -17,7 +17,7 @@ export default function ToroHome() {
           href="/write"
           className="group relative px-12 py-4 border border-black/10 rounded-full hover:border-black/30 transition-all duration-500 bg-white/50 backdrop-blur-sm"
         >
-          <span className="relative z-10 text-lg font-light tracking-widest group-hover:text-black transition-colors">書く</span>
+          <span className="relative z-10 text-lg font-light tracking-widest group-hover:text-black transition-colors">Toroする</span>
           <div className="absolute inset-0 bg-black/5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
         </Link>
         
