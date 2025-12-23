@@ -228,8 +228,10 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
       }
 
       // 長時間入力対策: リフレッシュ
+      // interim で回数を稼ぎすぎないよう閾値を上げつつ、
+      // 必ず「文が確定したタイミング(newlyFinalがある時)」にのみリフレッシュする
       resultCountRef.current += 1;
-      if (resultCountRef.current > 20) {
+      if (resultCountRef.current > 50 && newlyFinal) {
         console.log("Refreshing speech recognition session...");
         recognition.stop();
       }
@@ -250,7 +252,11 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     recognition.onend = () => {
       flushInterimToFinal();
       setInterimText("");
-      clearBreakTimers();
+      // 手動停止でない(=自動再起動する)場合は、無音タイマーをクリアせず維持する
+      // これにより、再接続中も「無音時間」としてカウントされ続け、改行が正しく入るようになる
+      if (isManuallyStoppedRef.current) {
+        clearBreakTimers();
+      }
 
       if (!isManuallyStoppedRef.current) {
         try {

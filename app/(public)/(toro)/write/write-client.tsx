@@ -191,7 +191,7 @@ export default function WriteClient({ isAuthenticated }: WriteClientProps) {
           value={content}
           onChange={handleTextChange}
           placeholder="今の気持ちを、そのままに。"
-          className="w-full h-full min-h-[50vh] bg-transparent border-none focus:ring-0 text-lg font-light leading-relaxed placeholder:text-black/10 resize-none outline-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          className="w-full h-full min-h-[50vh] bg-black/[0.01] border border-black/5 rounded-2xl p-6 focus:ring-0 focus:border-black/10 text-lg font-light leading-relaxed placeholder:text-black/10 resize-none outline-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] transition-colors duration-300"
           autoFocus
         />
 
