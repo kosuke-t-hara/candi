@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSpeechToTextJa } from "@/app/hooks/useSpeechToTextJa";
 import { Mic, MicOff, Trash2, CornerDownLeft, Loader2 } from "lucide-react";
 
@@ -9,8 +10,9 @@ interface ToroRecorderProps {
 }
 
 export const ToroRecorder = ({ onTextChanged, initialText = "" }: ToroRecorderProps) => {
+  const [text, setText] = useState(initialText);
+
   const {
-    finalText,
     interimText,
     isListening,
     isSupported,
@@ -23,6 +25,7 @@ export const ToroRecorder = ({ onTextChanged, initialText = "" }: ToroRecorderPr
     pauseMs: 1100,
     autoLineBreak: true,
     smartNormalize: true,
+    onFinal: (newChunk) => setText(prev => prev + newChunk),
   });
 
   // finalText が更新されたら親コンポーネントに通知したい場合などの処理
@@ -80,7 +83,7 @@ export const ToroRecorder = ({ onTextChanged, initialText = "" }: ToroRecorderPr
             <CornerDownLeft className="w-4 h-4" />
           </button>
           <button
-            onClick={clear}
+            onClick={() => setText("")}
             className="p-2.5 text-black/30 hover:text-red-400/60 hover:bg-red-50/50 rounded-full transition-all"
             title="クリア"
           >
@@ -99,8 +102,8 @@ export const ToroRecorder = ({ onTextChanged, initialText = "" }: ToroRecorderPr
         <div className="absolute inset-0 bg-black/[0.01] rounded-2xl -z-10" />
         
         <div className="whitespace-pre-wrap text-lg font-light leading-relaxed tracking-wide text-black/70">
-          {finalText ? (
-            <span>{finalText}</span>
+          {text ? (
+            <span>{text}</span>
           ) : !interimText && !isListening ? (
             <span className="text-black/10 italic">ここに声が文字になって届きます。</span>
           ) : null}

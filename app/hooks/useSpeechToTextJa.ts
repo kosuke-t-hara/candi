@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// Web Speech API interfaces for TypeScript
+// Web Speech API interfaces
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
   resultIndex: number;
@@ -42,6 +42,7 @@ interface UseSpeechToTextJaOptions {
   pauseMs?: number;
   autoLineBreak?: boolean;
   smartNormalize?: boolean;
+  onFinal?: (text: string) => void; // 確定テキストを受け取るコールバック
 }
 
 export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
@@ -50,9 +51,9 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     pauseMs = 1100,
     autoLineBreak = true,
     smartNormalize = true,
+    onFinal,
   } = options;
 
-  const [finalText, setFinalText] = useState("");
   const [interimText, setInterimText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -62,10 +63,15 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
   const shortBreakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longBreakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestInterimRef = useRef<string>("");
+  const lastFlushedChunkRef = useRef<string>(""); // 直前に通知したチャンク（重複ガード用）
+  const resultCountRef = useRef<number>(0); 
   const isManuallyStoppedRef = useRef<boolean>(true);
 
-  // 語尾と感嘆疑問で改行を入れる正規表現（Web Speech API の特性に合わせ、文末のゆらぎを考慮）
-  const lineBreakRegex = /(です|ます|でした|ました|ません|ますね|ですね|でしたね|だよ|だね|かな|かも|よね|じゃん|だな|[！？\?\!])\s*$/;
+  // コールバックの最新を保持するref（useEffect内でのstale closure対策）
+  const onFinalRef = useRef(onFinal);
+  useEffect(() => {
+    onFinalRef.current = onFinal;
+  }, [onFinal]);
 
   const clearBreakTimers = useCallback(() => {
     if (shortBreakTimerRef.current) clearTimeout(shortBreakTimerRef.current);
@@ -76,71 +82,44 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
 
   const normalizeText = useCallback((text: string) => {
     if (!smartNormalize) return text.trim();
-    // 全端をトリミング
     let normalized = text.trim();
     // 日本語文字（全角文字）と半角スペースが隣接している場合、そのスペースを削除
     normalized = normalized.replace(/([^\x00-\x7F]) +/g, "$1");
     normalized = normalized.replace(/ +([^\x00-\x7F])/g, "$1");
-    // 連続スペースは1つに圧縮（改行は触らない）
+    // 連続スペースは1つに圧縮
     normalized = normalized.replace(/ +/g, " ");
     return normalized;
   }, [smartNormalize]);
 
+  // 確定したチャンクを通知する内部関数
+  const notifyFinal = useCallback((text: string) => {
+    if (!text || !onFinalRef.current) return;
+    
+    // 直前のチャンクと全く同じならスキップ（重複ガード）
+    // ただし、改行のみ(\n)の場合は 1.1秒後と4.0秒後で連続して送る必要があるため除外
+    if (text !== "\n" && text === lastFlushedChunkRef.current) return;
+
+    onFinalRef.current(text);
+    lastFlushedChunkRef.current = text;
+  }, []);
+
+  // interim を強制的に final として通知する（無音検知時など）
   const flushInterimToFinal = useCallback(() => {
     const interim = latestInterimRef.current.trim();
     if (!interim) return;
 
     const normalized = normalizeText(interim);
-    setFinalText((prev) => {
-      const trimmedBase = prev.replace(/[ \u3000]+$/, "");
-
-      // 重複ガード: 既に追加予定のテキストが末尾にある場合は何もしない
-      if (trimmedBase.endsWith(normalized)) return prev;
-
-      if (!trimmedBase) return normalized;
-
-      // スマート・コネクタ
-      // 前の末尾が英数字かつ次の先頭が英数字の場合のみスペースを入れる
-      const lastChar = trimmedBase.slice(-1);
-      const nextChar = normalized.charAt(0);
-      const isAlphanumeric = (char: string) => /[a-zA-Z0-9]/.test(char);
-      
-      let separator = "";
-      if (trimmedBase.endsWith("\n")) {
-        separator = "";
-      } else if (isAlphanumeric(lastChar) && isAlphanumeric(nextChar)) {
-        separator = " ";
-      }
-
-      return trimmedBase + separator + normalized;
-    });
+    notifyFinal(normalized);
 
     setInterimText("");
     latestInterimRef.current = "";
-  }, [normalizeText]);
+  }, [normalizeText, notifyFinal]);
 
   const appendShortBreak = useCallback(() => {
-    setFinalText((prev) => {
-      if (!prev) return prev;
-      // 既に改行がある場合は追加しない
-      if (prev.endsWith("\n")) return prev;
-      return prev.replace(/[ \u3000]+$/, "") + "\n";
-    });
-  }, []);
+    // 改行のみを通知
+    notifyFinal("\n");
+  }, [notifyFinal]);
 
-  const appendLongBreak = useCallback(() => {
-    setFinalText((prev) => {
-      if (!prev) return prev;
-      // 既に2つ以上の改行がある場合は追加しない
-      if (prev.endsWith("\n\n")) return prev;
-      
-      const trimmed = prev.replace(/[ \u3000]+$/, "");
-      // 既に1つの改行がある場合は、1つだけ追加して \n\n にする
-      if (trimmed.endsWith("\n")) return trimmed + "\n";
-      // 改行がない場合は、\n\n を追加して空行を作る
-      return trimmed + "\n\n";
-    });
-  }, []);
 
   const scheduleBreakTimers = useCallback(() => {
     clearBreakTimers();
@@ -154,17 +133,20 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
 
     // 4.0s: \n\n (空行)
     longBreakTimerRef.current = setTimeout(() => {
-      appendLongBreak();
+      // 既に shotBreak で flush されているはずだが、念のため
+      // ここでは追加の改行を送る
+      // ※ ShortBreakで1つ送っているので、あと1つ送れば合計2つになる？
+      //   実装をシンプルにするため、LongBreak時は「追加で1つ送る」判定にするか、
+      //   あるいは「ShortBreak後にタイマーセットする」構造にするか。
+      //   現状は並列で走っているので、4秒後は「既に1秒後のが走った後」である。
+      //   なので、追加でもう1個送れば \n\n になる。
+      appendShortBreak(); 
     }, 4000);
-  }, [autoLineBreak, pauseMs, flushInterimToFinal, appendShortBreak, appendLongBreak, clearBreakTimers]);
+  }, [autoLineBreak, pauseMs, flushInterimToFinal, appendShortBreak, clearBreakTimers]);
 
   const appendNewline = useCallback(() => {
-    setFinalText((prev) => {
-      if (!prev) return prev;
-      const trimmed = prev.replace(/[ \u3000]+$/, "");
-      return trimmed + "\n\n";
-    });
-  }, []);
+    notifyFinal("\n\n");
+  }, [notifyFinal]);
 
   const start = useCallback(() => {
     isManuallyStoppedRef.current = false;
@@ -187,15 +169,16 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     clearBreakTimers();
   }, [clearBreakTimers, flushInterimToFinal]);
 
+  // clear は呼び出し元が state を消せばいいだけなので、hook 内では管理しないが、
+  // interim は消す必要がある。
   const clear = useCallback(() => {
-    setFinalText("");
     setInterimText("");
     latestInterimRef.current = "";
+    lastFlushedChunkRef.current = "";
   }, []);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
       setIsSupported(false);
       return;
@@ -209,6 +192,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
 
     recognition.onstart = () => {
       setIsListening(true);
+      resultCountRef.current = 0;
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -224,54 +208,30 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
         }
       }
 
-      // newlyFinal がある場合は Flush タイマーを即座に消去し、重複を避ける
       if (newlyFinal) {
         clearBreakTimers();
-        latestInterimRef.current = ""; // Flush 対象をクリア
+        latestInterimRef.current = "";
         setInterimText("");
-      } else {
+        
+        // 確定処理
+        const normalized = normalizeText(newlyFinal);
+        notifyFinal(normalized);
+
+      } else if (interim) {
         const trimmedInterim = interim.trim();
         setInterimText(trimmedInterim);
         latestInterimRef.current = trimmedInterim;
       }
 
-      // 動き（interim または newlyFinal）があればタイマーをリセットして 2段階Flush 予約
       if (interim || newlyFinal) {
         scheduleBreakTimers();
       }
 
-      if (newlyFinal) {
-        const normalized = normalizeText(newlyFinal);
-        setFinalText((prev) => {
-          const trimmedBase = prev.replace(/[ \u3000]+$/, "");
-
-          // 重複ガード
-          if (trimmedBase.endsWith(normalized)) return prev;
-
-          let updated;
-          if (!trimmedBase) {
-            updated = normalized;
-          } else {
-            // スマート・コネクタ
-            const lastChar = trimmedBase.slice(-1);
-            const nextChar = normalized.charAt(0);
-            const isAlphanumeric = (char: string) => /[a-zA-Z0-9]/.test(char);
-            
-            let separator = "";
-            if (trimmedBase.endsWith("\n")) {
-              separator = "";
-            } else if (isAlphanumeric(lastChar) && isAlphanumeric(nextChar)) {
-              separator = " ";
-            }
-            updated = trimmedBase + separator + normalized;
-          }
-          
-          // 語尾検知時は空行（2連改行）を入れて段落を作る
-          // if (autoLineBreak && lineBreakRegex.test(updated)) {
-          //   updated = updated.replace(/[ \u3000]+$/, "") + "\n\n";
-          // }
-          return updated;
-        });
+      // 長時間入力対策: リフレッシュ
+      resultCountRef.current += 1;
+      if (resultCountRef.current > 20) {
+        console.log("Refreshing speech recognition session...");
+        recognition.stop();
       }
     };
 
@@ -281,7 +241,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
         setError(event.error);
       }
       if (!isManuallyStoppedRef.current) {
-        console.warn("Speech recognition error, attempting restart:", event.error);
+        console.warn("Speech recognition error/restart:", event.error);
       } else {
         setIsListening(false);
       }
@@ -296,7 +256,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
         try {
           recognition.start();
         } catch (e) {
-          console.error("Failed to restart recognition:", e);
+          console.error("Failed to restart:", e);
           setIsListening(false);
         }
       } else {
@@ -311,10 +271,9 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
       recognition.stop();
       clearBreakTimers();
     };
-  }, [lang, autoLineBreak, pauseMs, normalizeText, flushInterimToFinal, scheduleBreakTimers, clearBreakTimers]);
+  }, [lang, autoLineBreak, pauseMs, normalizeText, flushInterimToFinal, scheduleBreakTimers, clearBreakTimers, notifyFinal]);
 
   return {
-    finalText,
     interimText,
     isListening,
     isSupported,
