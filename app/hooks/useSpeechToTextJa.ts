@@ -64,6 +64,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
   const longBreakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestInterimRef = useRef<string>("");
   const lastFlushedChunkRef = useRef<string>(""); // 直前に通知したチャンク（重複ガード用）
+  const interimFlushedRef = useRef<string>(""); // Interimの段階で独自にFlushしたテキストの累積
   const resultCountRef = useRef<number>(0); 
   const isManuallyStoppedRef = useRef<boolean>(true);
 
@@ -111,6 +112,11 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     const normalized = normalizeText(interim);
     notifyFinal(normalized);
 
+    // 独自に確定させた分を記録する
+    interimFlushedRef.current += normalized;
+
+    // ここで interimText はクリアするが、APIからはまだ同じ interim が送られてくる可能性がある
+    // それは onresult 側で interimFlushedRef を使って差し引いて表示する
     setInterimText("");
     latestInterimRef.current = "";
   }, [normalizeText, notifyFinal]);
@@ -215,11 +221,47 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
         
         // 確定処理
         const normalized = normalizeText(newlyFinal);
-        notifyFinal(normalized);
+
+        // 差し引きロジック:
+        // アプリ側で既にFlushした内容(interimFlushedRef)が、APIのFinal結果の先頭に含まれていれば
+        // その部分を無視して、差分だけを通知する。
+        let textToNotify = normalized;
+        const flushed = interimFlushedRef.current;
+
+        if (flushed && normalized.startsWith(flushed)) {
+          textToNotify = normalized.slice(flushed.length);
+          // 完全に一致または包含されていたので、Flush記録はここで消費・リセット
+          interimFlushedRef.current = ""; 
+        } else if (flushed) {
+          // もし一致しなければ（読みが修正された等）、
+          // 仕方ないのでFlush記録は破棄し、APIの結果をそのまま採用（重複する可能性はあるが、欠落よりマシ）
+          // または、重複を恐れて notify を控える手もあるが、修正された場合は新しい方が正しいはず。
+          interimFlushedRef.current = "";
+        }
+
+        if (textToNotify) {
+          notifyFinal(textToNotify);
+        }
 
       } else if (interim) {
         const trimmedInterim = interim.trim();
-        setInterimText(trimmedInterim);
+        const normalizedInterim = normalizeText(trimmedInterim);
+        let displayInterim = trimmedInterim;
+
+        // Interim表示の差し引き:
+        // 既にFlushした分がInterimに含まれていれば、画面表示からは消す
+        if (interimFlushedRef.current && normalizedInterim.startsWith(interimFlushedRef.current)) {
+          // 単純なsliceだと、normalize前のスペース等がズレる可能性あるが、
+          // 概ねの表示用なので、normalize後の長さ分だけ先頭から削る、等の簡易処理とする
+          // ※厳密には元テキスト上の位置を特定すべきだが、ここでは簡易的に normalized ベースで比較
+          
+          // 表示用には、元の trimmedInterim を使いたいが、比較は normalized で行うジレンマ
+          // ここでは「既に確定した分」はもうユーザーに見えているので、
+          // normalizedInterim から flushed 分を除去した残りの文字列を表示用とする
+          displayInterim = normalizedInterim.slice(interimFlushedRef.current.length);
+        }
+
+        setInterimText(displayInterim);
         latestInterimRef.current = trimmedInterim;
       }
 

@@ -139,7 +139,7 @@ export default function WriteClient({ isAuthenticated }: WriteClientProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-light tracking-widest text-black/70">いまのきもち</h1>
+        <h1 className="text-2xl font-light tracking-widest text-black/70"></h1>
         
         <div className="flex items-center gap-6">
           {error && (
