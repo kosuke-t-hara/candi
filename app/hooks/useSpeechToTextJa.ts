@@ -111,10 +111,28 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     if (!interim) return;
 
     const normalized = normalizeText(interim);
-    notifyFinal(normalized);
 
-    // 独自に確定させた分を記録する
-    interimFlushedRef.current += normalized;
+    // 差し引きロジック: 
+    // ここでも interimFlushedRef を使って、既にFlush済みの部分を除去してから通知する
+    let textToNotify = normalized;
+    const flushed = interimFlushedRef.current;
+    
+    // 単純な startsWith チェックだけだと厳しすぎるかもしれないが、
+    // 基本的に同じセッション内での累積なので、前方一致で除去できるはず。
+    if (flushed && normalized.startsWith(flushed)) {
+       textToNotify = normalized.slice(flushed.length);
+    }
+    
+    // 差分がなければ通知しない（既に全量Flush済み）
+    if (!textToNotify) return;
+
+    notifyFinal(textToNotify); // 差分だけを通知
+
+    // 独自に確定させた分を記録する（今回の差分だけを追記）
+    // ※ interimFlushedRef は「これまでにFlushした累積」なので、
+    //   単純に += textToNotify で正しい。
+    //   元々 flushed(=累積) + textToNotify(=差分) = normalized(=全量) となる。
+    interimFlushedRef.current += textToNotify;
 
     // ここで interimText はクリアするが、APIからはまだ同じ interim が送られてくる可能性がある
     // それは onresult 側で interimFlushedRef を使って差し引いて表示する
