@@ -93,13 +93,62 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     return normalized;
   }, [smartNormalize]);
 
+  // 文字列の類似度を計算する (Jaccard係数 + bi-gram)
+  const getSimilarity = useCallback((str1: string, str2: string) => {
+    if (!str1 || !str2) return 0;
+    if (str1 === str2) return 1;
+
+    const getGrams = (s: string) => {
+      const grams = new Set<string>();
+      for (let i = 0; i < s.length - 1; i++) {
+        grams.add(s.substring(i, i + 2));
+      }
+      return grams;
+    };
+
+    const grams1 = getGrams(str1);
+    const grams2 = getGrams(str2);
+
+    if (grams1.size === 0 || grams2.size === 0) {
+      // 1文字のみの場合などは単純比較
+      return str1 === str2 ? 1 : 0;
+    }
+
+    const intersection = new Set([...grams1].filter(x => grams2.has(x)));
+    const union = new Set([...grams1, ...grams2]);
+
+    return intersection.size / union.size;
+  }, []);
+
   // 確定したチャンクを通知する内部関数
   const notifyFinal = useCallback((text: string) => {
     if (!text || !onFinalRef.current) return;
     
-    // 直前のチャンクと全く同じならスキップ（重複ガード）
-    // ただし、改行のみ(\n)の場合は 1.1秒後と4.0秒後で連続して送る必要があるため除外
-    if (text !== "\n" && text === lastFlushedChunkRef.current) return;
+    // 基本的な重複ガード: 直前のチャンクと全く同じならスキップ
+    // ただし改行("\n")の場合は特別な判定を行う
+    if (text === "\n") {
+       // 直前が "\n" かつ、その前（lastFlushedChunkRef 以前の状態）を知る術がここにはないが、
+       // シンプルに「直前が \n なら、次は \n まで許容するが、それ以上は送らない」という
+       // 状態管理を簡易化するため、lastFlushedChunkRef に "\n\n" を保持させる運用にする。
+       
+       if (lastFlushedChunkRef.current === "\n\n") {
+         // 既に2連改行済みなら、これ以上の改行は送らない
+         return;
+       }
+       
+       onFinalRef.current(text);
+       
+       // 直前が \n だったなら、次は \n\n という状態にする
+       if (lastFlushedChunkRef.current === "\n") {
+         lastFlushedChunkRef.current = "\n\n";
+       } else {
+         lastFlushedChunkRef.current = "\n";
+       }
+       return;
+    }
+
+    // "\n" 以外のテキスト重複ガード
+    if (text === lastFlushedChunkRef.current) return;
 
     onFinalRef.current(text);
     lastFlushedChunkRef.current = text;
@@ -117,8 +166,14 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     let textToNotify = normalized;
     const flushed = interimFlushedRef.current;
     
-    // 単純な startsWith チェックだけだと厳しすぎるかもしれないが、
-    // 基本的に同じセッション内での累積なので、前方一致で除去できるはず。
+    // 類似度判定によるガード:
+    // 既にFlush済みの内容と、今回の内容が非常に似ている（80%以上）なら、
+    // 表記揺れ（漢字変換の差など）とみなしてスキップする
+    if (flushed && getSimilarity(flushed, normalized) > 0.8) {
+      return;
+    }
+
+    // 単純な startsWith チェック
     if (flushed && normalized.startsWith(flushed)) {
        textToNotify = normalized.slice(flushed.length);
     }
@@ -251,10 +306,15 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
         const normalized = normalizeText(newlyFinal);
 
         // 差し引きロジック:
-        // アプリ側で既にFlushした内容(interimFlushedRef)が、APIのFinal結果の先頭に含まれていれば
-        // その部分を無視して、差分だけを通知する。
+        // アプリ側で既にFlushした内容(interimFlushedRef)と、APIのFinal結果を比較する
         let textToNotify = normalized;
         const flushed = interimFlushedRef.current;
+
+        // 類似度判定によるガード: 80%以上一致なら重複とみなす
+        if (flushed && getSimilarity(flushed, normalized) > 0.8) {
+           interimFlushedRef.current = ""; 
+           return;
+        }
 
         if (flushed && normalized.startsWith(flushed)) {
           textToNotify = normalized.slice(flushed.length);
