@@ -66,6 +66,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
   const lastFlushedChunkRef = useRef<string>(""); // 直前に通知したチャンク（重複ガード用）
   const interimFlushedRef = useRef<string>(""); // Interimの段階で独自にFlushしたテキストの累積
   const resultCountRef = useRef<number>(0); 
+  const processedResultIndexRef = useRef<number>(0); // 処理済みの結果インデックス
   const isManuallyStoppedRef = useRef<boolean>(true);
 
   // コールバックの最新を保持するref（useEffect内でのstale closure対策）
@@ -199,16 +200,25 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     recognition.onstart = () => {
       setIsListening(true);
       resultCountRef.current = 0;
+      processedResultIndexRef.current = 0;
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = "";
       let newlyFinal = "";
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
+      // 処理済みのインデックス以降のみを対象とする
+      // ※ Safari等では continuous: true の時に過去の結果も含めて返してくる場合があるため
+      const startIndex = processedResultIndexRef.current;
+      
+      for (let i = startIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        const transcript = result[0].transcript;
+        
+        if (result.isFinal) {
           newlyFinal += transcript;
+          // Finalとして処理したら、処理済みインデックスを進める
+          processedResultIndexRef.current = i + 1;
         } else {
           interim += transcript;
         }
