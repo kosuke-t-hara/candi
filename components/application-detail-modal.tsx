@@ -11,6 +11,9 @@ import { AddEventBottomSheet } from "./add-event-bottom-sheet"
 import { getStageLabel } from "@/lib/selection-phase-utils"
 import { LinkSection } from "./link-section"
 import { addApplicationLink, deleteApplicationLink } from "@/app/actions/links"
+import { ToroComposer } from "@/app/components/toro/ToroComposer"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Mic } from "lucide-react"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -91,6 +94,8 @@ export function ApplicationDetailModal({
 
   const [isEditingMemo, setIsEditingMemo] = useState(false)
   const [editedMemo, setEditedMemo] = useState("")
+
+  const [isToroOpen, setIsToroOpen] = useState(false)
 
   const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false)
 
@@ -549,7 +554,18 @@ export function ApplicationDetailModal({
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 tracking-[0.25px]">この応募のメモ</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-[#1A1A1A] tracking-[0.25px]">この応募のメモ</h3>
+                {!isMasked && (
+                  <button
+                    onClick={() => setIsToroOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 hover:bg-black/10 text-black/60 rounded-full text-xs font-medium transition-colors"
+                  >
+                    <Mic className="w-3.5 h-3.5" />
+                    <span>Toroする</span>
+                  </button>
+                )}
+              </div>
               <div className="rounded-[14px] bg-[#F5F6F8] p-4 group relative">
                 {isMasked ? (
                   <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
@@ -648,6 +664,29 @@ export function ApplicationDetailModal({
         mode={editingEvent ? "edit" : "add"}
         existingEvent={editingEvent || undefined}
       />
+
+      <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
+        <SheetContent side="bottom" className="h-[80vh] rounded-t-[20px] p-0 max-w-[640px] mx-auto inset-x-0">
+          <SheetHeader className="p-6 pb-2">
+            <SheetTitle className="text-lg font-light tracking-wide text-black/70">Toroする</SheetTitle>
+          </SheetHeader>
+          <div className="px-6 pb-6 h-full overflow-y-auto">
+            <ToroComposer 
+              isAuthenticated={true} // As we are in protected route
+              context={{ 
+                source: 'candi_application', 
+                applicationId: application.id,
+                companyName: application.company 
+              }}
+              onSaved={() => {
+                setIsToroOpen(false)
+                // Maybe show toast? existing logic implies simple close is fine
+              }}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

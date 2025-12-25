@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createToroEntry(content: string) {
+export async function createToroEntry(content: string, context?: any) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -17,6 +17,7 @@ export async function createToroEntry(content: string) {
     .insert({
       user_id: user.id,
       content: content,
+      context: context ?? null,
     })
     .select()
     .single()

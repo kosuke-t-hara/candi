@@ -264,7 +264,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
               className={`min-w-[140px] flex-shrink-0 rounded-[14px] border ${
                 isToday ? "border-[#3B82F6] ring-1 ring-[#3B82F6]" : "border-[#E5E7EB]"
               } bg-white px-3 py-3 shadow-sm md:min-w-0 md:flex-shrink flex flex-col ${
-                isExpanded ? "min-h-[180px]" : "h-[180px]"
+                isExpanded ? "min-h-[200px]" : "h-[200px]"
               }`}
             >
               <div className="mb-2 border-b border-[#E5E7EB] pb-2 flex items-center justify-between flex-shrink-0">

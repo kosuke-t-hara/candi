@@ -203,8 +203,8 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           weeklyCount={weeklyEventCount}
           onOngoingClick={handleScrollToApplications}
         />
-        <DailyQuestionCard />
-        <TodoSection isMasked={isMasked} />
+        {/* <DailyQuestionCard /> */}
+        {/* <TodoSection isMasked={isMasked} /> */}
         <WeeklySchedule
           isMasked={isMasked}
           onEventClick={handleApplicationClick}
