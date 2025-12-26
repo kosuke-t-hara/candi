@@ -670,7 +670,7 @@ export function ApplicationDetailModal({
           <SheetHeader className="p-6 pb-2">
             <SheetTitle className="text-lg font-light tracking-wide text-black/70">Toroする</SheetTitle>
           </SheetHeader>
-          <div className="px-6 pb-6 h-full overflow-y-auto">
+          <div className="px-6 pt-4 pb-6 h-full overflow-y-auto">
             <ToroComposer 
               isAuthenticated={true} // As we are in protected route
               context={{ 

@@ -162,7 +162,7 @@ export function ToroComposer({
           
           <button
             onClick={toggleRecording}
-            className={`relative p-2 rounded-full transition-all duration-500 ${
+            className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-500 ${
               isListening 
                 ? 'text-black/60 bg-black/5' 
                 : 'text-black/20 hover:text-black/40 hover:bg-black/5'

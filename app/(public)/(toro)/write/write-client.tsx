@@ -52,7 +52,7 @@ export default function WriteClient({ isAuthenticated }: WriteClientProps) {
       
       <div className="flex justify-start mt-8">
         <button 
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="text-xs text-black/20 hover:text-black/40 transition-colors"
         >
           戻る

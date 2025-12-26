@@ -45,34 +45,7 @@ export function Header() {
               <span>📒</span>
               <span className="hidden sm:inline">Toro</span>
             </Link>
-            <Link
-              href="/career-os"
-              className="flex items-center gap-1.5 rounded-lg bg-[#F3F4F6]/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#F3F4F6]/20"
-            >
-              <span>🧭</span>
-              <span className="hidden sm:inline">キャリアOS</span>
-            </Link>
-            <Link
-              href="/values-map"
-              className="flex items-center gap-1.5 rounded-lg bg-[#F3F4F6]/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#F3F4F6]/20"
-            >
-              <span>🗺️</span>
-              <span className="hidden sm:inline">価値観マップ</span>
-            </Link>
-            <Link
-              href="/ai-hearing"
-              className="flex items-center gap-1.5 rounded-lg bg-[#F3F4F6]/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#F3F4F6]/20"
-            >
-              <span>🎤</span>
-              <span className="hidden sm:inline">AIヒアリング</span>
-            </Link>
-            <Link
-              href="/agents"
-              className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
-            >
-              <span>👔</span>
-              <span className="hidden sm:inline">Agent Preview</span>
-            </Link>
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-sm font-medium text-red-200 transition-colors hover:bg-red-500/20"

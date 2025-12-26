@@ -10,7 +10,15 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Candi - 転職活動OS",
   description: "転職活動を効率的に管理するためのアプリ",
-    generator: 'v0.app'
+  generator: "v0.app",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 }
 
 export const viewport: Viewport = {

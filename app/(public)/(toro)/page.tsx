@@ -25,7 +25,7 @@ export default function ToroHome() {
           href="/past"
           className="group relative px-12 py-4 border border-black/10 rounded-full hover:border-black/30 transition-all duration-500 bg-white/50 backdrop-blur-sm"
         >
-          <span className="relative z-10 text-lg font-light tracking-widest group-hover:text-black transition-colors">過去</span>
+          <span className="relative z-10 text-lg font-light tracking-widest group-hover:text-black transition-colors">過去を見る</span>
           <div className="absolute inset-0 bg-black/5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
         </Link>
       </div>
