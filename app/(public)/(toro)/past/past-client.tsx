@@ -75,7 +75,7 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-light tracking-widest text-black/70">
-            {isArchivedView ? 'しまったもの' : '過去'}
+            {isArchivedView ? 'しまったもの' : ''}
           </h1>
           <button 
             onClick={() => isArchivedView ? router.push('/past') : router.push('/')}

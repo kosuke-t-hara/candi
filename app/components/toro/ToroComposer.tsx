@@ -186,7 +186,7 @@ export function ToroComposer({
             className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             type="button"
           >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-black/40" /> : '保存'}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-black/40" /> : '残す'}
           </button>
         </div>
       </div>
