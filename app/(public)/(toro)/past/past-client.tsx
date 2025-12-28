@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Archive, RotateCcw } from 'lucide-react'
 import { archiveToroEntry, unarchiveToroEntry } from '@/app/actions/toro'
@@ -70,6 +70,50 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
     })
   }
 
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const getBlurStyle = (createdAt: string, hasLabel: boolean = false) => {
+    // アーカイブ済みビューまたはラベル付きは思考が保持されているためブラーを無効化
+    if (isArchivedView || hasLabel) {
+      return {
+        blur: 0,
+        opacity: 1,
+        color: 'text-black/70',
+        focusBlur: 0,
+        focusOpacity: 1
+      }
+    }
+
+    const created = new Date(createdAt).getTime()
+    const now = isMounted ? new Date().getTime() : created // Initial pass matches
+    const diffDays = Math.max(0, Math.min(14, (now - created) / (1000 * 60 * 60 * 24)))
+
+    // 14日で飽和する指数曲線計算
+    const progress = Math.pow(diffDays / 14, 0.7)
+    const blur = progress * 2.2
+    const opacity = 1.0 - (progress * 0.5)
+    
+    const colorOpacity = Math.floor(80 - (progress * 50))
+    const baseColor = `text-black/${colorOpacity}`
+
+    return { 
+      blur, 
+      opacity, 
+      color: baseColor,
+      focusBlur: blur * 0.5,
+      focusOpacity: Math.min(1, opacity + 0.15)
+    }
+  }
+
+  // ハイドレーションエラーを確実に防ぐため、サーバーサイドとの初期表示を一致させる
+  if (!isMounted) {
+    return <div className="min-h-screen" />
+  }
+
   return (
     <>
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -90,24 +134,52 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
             {isArchivedView ? 'なにも、しまっていません。' : 'まだ、なにも。'}
           </div>
         ) : (
-          <div className="space-y-6">
-            {entries.map((entry) => (
-              <div 
-                key={entry.id}
-                onClick={() => setSelectedEntry(entry)}
-                className="group cursor-pointer py-4 border-b border-black/[0.03] hover:border-black/[0.08] transition-all"
-              >
-                <div className="text-[10px] text-black/20 mb-1 font-light tracking-tighter">
-                  {formatDate(entry.created_at)}
+          <div className="grid grid-cols-1 gap-12">
+            {entries.map((entry) => {
+              const style = getBlurStyle(entry.created_at, false)
+              
+              return (
+                <div 
+                  key={entry.id}
+                  onClick={() => setSelectedEntry(entry)}
+                  className="group cursor-pointer py-4 border-b border-black/[0.02] hover:border-black/[0.05] transition-all duration-300 ease-out"
+                  style={{
+                    ['--base-blur' as any]: `${style.blur}px`,
+                    ['--base-opacity' as any]: style.opacity,
+                    ['--focus-blur' as any]: `${style.focusBlur}px`,
+                    ['--focus-opacity' as any]: style.focusOpacity,
+                  }}
+                >
+                  <div 
+                    className="text-[10px] text-black/20 mb-2 font-light tracking-tighter"
+                    suppressHydrationWarning
+                  >
+                    {formatDate(entry.created_at)}
+                  </div>
+                  <div className="relative">
+                    <p 
+                      className={`text-sm font-light leading-relaxed pr-12 whitespace-pre-wrap line-clamp-3 transition-all duration-300 ease-out
+                        ${style.color} group-hover:text-black/80`}
+                      style={{ 
+                        filter: `blur(var(--blur, var(--base-blur)))`,
+                        opacity: `var(--opacity, var(--base-opacity))`,
+                        ['--blur' as any]: 'var(--base-blur)', // Default
+                        ['--opacity' as any]: 'var(--base-opacity)', // Default
+                      } as any}
+                    >
+                      <style jsx>{`
+                        div.group:hover p {
+                          --blur: var(--focus-blur) !important;
+                          --opacity: var(--focus-opacity) !important;
+                        }
+                      `}</style>
+                      {entry.content}
+                    </p>
+                    <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#fdfdfd] to-transparent pointer-events-none" />
+                  </div>
                 </div>
-                <div className="relative">
-                  <p className="text-sm font-light text-black/60 line-clamp-1 pr-12">
-                    {entry.content}
-                  </p>
-                  <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#fdfdfd] to-transparent pointer-events-none" />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -154,6 +226,7 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
               </button>
             </div>
             
+            {/* Modal content is always clear */}
             <div className="p-8 pb-4 overflow-y-auto font-light leading-relaxed text-black/70 whitespace-pre-wrap flex-1">
               {selectedEntry.content}
             </div>
