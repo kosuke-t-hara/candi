@@ -15,86 +15,25 @@ interface NewOpportunityBottomSheetProps {
 
 type SourceType = "ヘッドハンター" | "ダイレクト" | "リファラル" | "自己応募" | null
 
-interface StatusPreset {
-  id: string
-  label: string
-  stage: string
-  status: string
-  ball: "my" | "company"
-  defaultNextAction: string
-}
+const positionSuggestions = ["法人営業", "デザイナー", "システムエンジニア", "プロダクトマネージャー", "プロジェクトマネージャー", "コーポレート", "マーケティング", "カスタマーサービス", "カスタマーサクセス", "コンサルティング", "経営", "経理", "人事", "HRBP", "その他"]
 
-const statusPresets: StatusPreset[] = [
-  {
-    id: "hh-scheduling",
-    label: "HH面談調整中",
-    stage: "ヘッドハンター面談",
-    status: "調整中",
-    ball: "my",
-    defaultNextAction: "ヘッドハンターに候補日を返信",
-  },
-  {
-    id: "casual-scheduling",
-    label: "カジュアル面談調整中",
-    stage: "カジュアル面談",
-    status: "調整中",
-    ball: "my",
-    defaultNextAction: "カジュアル面談の候補日を返信",
-  },
-  {
-    id: "first-interview-scheduling",
-    label: "一次面接調整中",
-    stage: "一次面接",
-    status: "調整中",
-    ball: "my",
-    defaultNextAction: "一次面接の候補日を返信",
-  },
-  {
-    id: "second-interview-scheduling",
-    label: "二次面接調整中",
-    stage: "二次面接",
-    status: "調整中",
-    ball: "my",
-    defaultNextAction: "二次面接の候補日を返信",
-  },
-]
-
-const stageOptions = ["ヘッドハンター面談", "カジュアル面談", "書類選考", "一次面接", "二次面接", "最終面接"]
-const statusOptions = ["こっちボール", "企業ボール", "調整中"]
-const positionSuggestions = ["プロダクトマネージャー", "PdM", "プロジェクトマネージャー"]
 
 export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBottomSheetProps) {
   const [isPending, startTransition] = useTransition()
   const [source, setSource] = useState<SourceType>(null)
-  // const [selectedHeadHunter, setSelectedHeadHunter] = useState<HeadHunter | null>(null) // Removed
-  // const [isAddingNewHH, setIsAddingNewHH] = useState(false) // Removed
-  // const [newHHName, setNewHHName] = useState("") // Removed
-  // const [customHeadHunters, setCustomHeadHunters] = useState<string[]>([]) // Removed
-  const [sourceDetail, setSourceDetail] = useState("") // Added for free text input
+  const [sourceDetail, setSourceDetail] = useState("") 
   const [pendingLinks, setPendingLinks] = useState<ApplicationLink[]>([])
 
   const [company, setCompany] = useState("")
   const [position, setPosition] = useState("")
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [stage, setStage] = useState("")
-  const [status, setStatus] = useState("")
   const [nextAction, setNextAction] = useState("")
-  const [interviewDate, setInterviewDate] = useState("")
-
-
 
   const resetForm = () => {
     setSource(null)
     setSourceDetail("")
     setCompany("")
     setPosition("")
-    setSelectedPreset(null)
-    setShowAdvanced(false)
-    setStage("")
-    setStatus("")
     setNextAction("")
-    setInterviewDate("")
     setPendingLinks([])
   }
 
@@ -102,17 +41,6 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
     resetForm()
     onClose()
   }
-
-  const handlePresetSelect = (preset: StatusPreset) => {
-    setSelectedPreset(preset.id)
-    setStage(preset.stage)
-    setStatus(preset.status)
-    if (!nextAction) {
-      setNextAction(preset.defaultNextAction)
-    }
-  }
-
-
 
   const handleSave = () => {
     startTransition(async () => {
@@ -128,13 +56,8 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
       
       formData.append("source", sourceValue)
       
-      let stageValue = "research"
-      if (stage === "ヘッドハンター面談") stageValue = "research"
-      else if (stage === "カジュアル面談") stageValue = "research"
-      else if (stage === "書類選考") stageValue = "screening"
-      else if (stage.includes("面接")) stageValue = "interviewing"
-      
-      formData.append("stage", stageValue)
+      // Defaulting to research as it's a new opportunity
+      formData.append("stage", "research")
       
       // Append source detail to status_note if present
       let finalStatusNote = nextAction
@@ -155,7 +78,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
     })
   }
 
-  const isFormValid = company.trim() && position.trim() && stage && status
+  const isFormValid = company.trim() && position.trim()
 
   useEffect(() => {
     if (isOpen) {
@@ -262,71 +185,6 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
             </div>
           </div>
 
-          {/* Status Presets */}
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-gray-700">今どんな状態？</label>
-            <div className="grid grid-cols-2 gap-2">
-              {statusPresets.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => handlePresetSelect(preset)}
-                  className={`relative rounded-lg border-2 p-3 text-left text-sm transition-colors ${
-                    selectedPreset === preset.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  {selectedPreset === preset.id && <span className="absolute right-2 top-2 text-blue-600">✓</span>}
-                  <span className="font-medium text-gray-900">{preset.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Advanced Settings Toggle */}
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-700"
-            >
-              細かく設定する
-            </button>
-
-            {/* Advanced Settings */}
-            {showAdvanced && (
-              <div className="mt-3 space-y-3 rounded-lg bg-gray-50 p-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">ステージ</label>
-                  <select
-                    value={stage}
-                    onChange={(e) => setStage(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="">選択してください</option>
-                    {stageOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">状況</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="">選択してください</option>
-                    {statusOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Next Action */}
           <div className="mb-6">
             <label className="mb-2 block text-sm font-medium text-gray-700">次のアクション</label>
@@ -336,17 +194,6 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
               placeholder="例）一次面接の候補日を今日中に返信"
               rows={3}
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Interview Date */}
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-gray-700">面接予定日（任意）</label>
-            <input
-              type="date"
-              value={interviewDate}
-              onChange={(e) => setInterviewDate(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
