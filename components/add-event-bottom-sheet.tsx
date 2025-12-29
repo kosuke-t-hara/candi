@@ -8,6 +8,9 @@ import { LoadingOverlay } from "./ui/loading-overlay"
 import type { ApplicationEvent, ApplicationEventStatus, ApplicationLink } from "@/lib/mock-data"
 import { LinkSection } from "./link-section"
 import { addEventLink, deleteEventLink } from "@/app/actions/links"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { ToroComposer } from "@/app/components/toro/ToroComposer"
+import { getEventToroEntries } from "@/app/actions/toro"
 
 export type EventSheetMode = "add" | "edit"
 
@@ -201,6 +204,7 @@ interface AddEventBottomSheetProps {
   onDelete?: () => void
   mode?: EventSheetMode
   existingEvent?: ApplicationEvent
+  applicationId?: string
 }
 
 export function AddEventBottomSheet({
@@ -210,6 +214,7 @@ export function AddEventBottomSheet({
   onDelete,
   mode = "add",
   existingEvent,
+  applicationId,
 }: AddEventBottomSheetProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -226,6 +231,8 @@ export function AddEventBottomSheet({
   const [touchOffset, setTouchOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [pendingLinks, setPendingLinks] = useState<ApplicationLink[]>([])
+  const [isToroOpen, setIsToroOpen] = useState(false)
+  const [memoEntries, setMemoEntries] = useState<any[]>([])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0]
@@ -273,6 +280,12 @@ export function AddEventBottomSheet({
         setNote(existingEvent.note || "")
         setEndTimeManuallySet(true)
         setPendingLinks([])
+
+        const fetchMemos = async () => {
+          const entries = await getEventToroEntries(existingEvent.id)
+          setMemoEntries(entries)
+        }
+        fetchMemos()
       } else {
         const roundedStart = roundUpTo15Minutes()
         setStartTime(roundedStart)
@@ -487,16 +500,43 @@ export function AddEventBottomSheet({
               />
             </div>
 
-            {/* Note */}
-            <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">メモ（任意）</label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-[#E5E7EB] rounded-[14px] text-sm focus:outline-none focus:ring-2 focus:ring-[#2F80ED] focus:border-transparent resize-none"
-              />
-            </div>
+            {/* Note - Only show on edit and use Toro */}
+            {mode === "edit" && existingEvent && (
+              <div>
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">イベントのメモ</label>
+                <div 
+                  className="rounded-[14px] bg-[#F5F6F8] p-4 group relative cursor-pointer hover:bg-[#F0F1F4] transition-all min-h-[60px]"
+                  onClick={() => setIsToroOpen(true)}
+                >
+                  <div className="absolute top-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-black/5">
+                    <span className="text-xs font-medium text-[#2F80ED]">
+                      💭Toroする
+                    </span>
+                  </div>
+                  {memoEntries.length > 0 ? (
+                    <div className="space-y-4">
+                      {memoEntries.map((entry, idx) => (
+                        <div key={entry.id} className={`${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
+                          <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                            {entry.content}
+                          </p>
+                          <p className="text-[10px] text-[#A1A1AA] mt-1">
+                            {new Date(entry.created_at).toLocaleString('ja-JP', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#A1A1AA]">まだメモはありません</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Links */}
             <div className="pt-2 border-t border-[#E5E7EB]">
@@ -568,6 +608,33 @@ export function AddEventBottomSheet({
       </div>
       
       <LoadingOverlay isVisible={isSaving} className="z-[100]" />
+
+      <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
+        <SheetContent side="bottom" className="h-[80vh] rounded-t-[20px] p-0 max-w-[640px] mx-auto inset-x-0 z-[110]">
+          <SheetHeader className="p-6 pb-2">
+            <SheetTitle className="text-lg font-light tracking-wide text-black/70"></SheetTitle>
+          </SheetHeader>
+          <div className="px-6 pt-4 pb-6 h-full overflow-y-auto">
+            <ToroComposer 
+              isAuthenticated={true}
+              context={{ 
+                source: 'candi_event', 
+                applicationId: applicationId,
+                eventId: existingEvent?.id,
+                eventTitle: title || eventType
+              }}
+              onSaved={async () => {
+                setIsToroOpen(false)
+                if (existingEvent) {
+                  const entries = await getEventToroEntries(existingEvent.id)
+                  setMemoEntries(entries)
+                }
+              }}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {isDatePickerOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)} />}
     </>

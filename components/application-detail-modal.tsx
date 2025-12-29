@@ -119,7 +119,8 @@ export function ApplicationDetailModal({
       setIsEditingPosition(false)
       
       const fetchMemos = async () => {
-        const entries = await getApplicationToroEntries(application.id)
+        // Fetch more entries to cover both global notes and event notes
+        const entries = await getApplicationToroEntries(application.id, 50)
         setMemoEntries(entries)
       }
       fetchMemos()
@@ -519,33 +520,27 @@ export function ApplicationDetailModal({
                           </button>
                         </div>
 
-                        {hasNote && (
-                          <div className="mt-2">
-                            {isMasked ? (
-                              <p className="text-xs text-[#A1A1AA] italic">メモ：Private</p>
-                            ) : (
-                              <>
-                                <p className={`text-sm text-[#333] whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
-                                  {event.note}
-                                </p>
-                                {event.note.length > 100 && (
-                                  <button
-                                    onClick={() => toggleEvent(index)}
-                                    className="flex items-center gap-1 text-xs text-[#2F80ED] hover:text-blue-700 mt-1 font-medium transition-colors"
-                                  >
-                                    {isExpanded ? (
-                                      <>
-                                        閉じる <ChevronUp className="h-3 w-3" />
-                                      </>
-                                    ) : (
-                                      <>
-                                        詳細を見る <ChevronDown className="h-3 w-3" />
-                                      </>
-                                    )}
-                                  </button>
-                                )}
-                              </>
-                            )}
+                        {/* Show Toro entries for this specific event */}
+                        {!isMasked && (
+                          <div className="mt-2 space-y-2">
+                            {memoEntries
+                              .filter(entry => entry.context?.eventId === event.id)
+                              .slice(0, 3) // Latest 3 for the event
+                              .map((entry, idx) => (
+                                <div key={entry.id} className="bg-[#F5F6F8]/50 p-2 rounded-lg group/entry relative">
+                                  <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                                    {entry.content}
+                                  </p>
+                                  <p className="text-[10px] text-[#A1A1AA] mt-1">
+                                    {new Date(entry.created_at).toLocaleString('ja-JP', { 
+                                      month: 'numeric', 
+                                      day: 'numeric', 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </p>
+                                </div>
+                              ))}
                           </div>
                         )}
 
@@ -588,9 +583,15 @@ export function ApplicationDetailModal({
                         💭Toroする
                       </span>
                     </div>
-                    {memoEntries.length > 0 ? (
+                    {/* Global notes (entries with no eventId) */}
+                    {memoEntries
+                      .filter(entry => !entry.context?.eventId)
+                      .slice(0, 3).length > 0 ? (
                       <div className="space-y-4">
-                        {memoEntries.map((entry, idx) => (
+                        {memoEntries
+                          .filter(entry => !entry.context?.eventId)
+                          .slice(0, 3)
+                          .map((entry, idx) => (
                           <div key={entry.id} className={`${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
                             <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
                               {entry.content}
@@ -657,6 +658,7 @@ export function ApplicationDetailModal({
         onDelete={editingEvent ? handleDeleteEvent : undefined}
         mode={editingEvent ? "edit" : "add"}
         existingEvent={editingEvent || undefined}
+        applicationId={application.id}
       />
 
       <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
@@ -674,7 +676,7 @@ export function ApplicationDetailModal({
               }}
               onSaved={async () => {
                 setIsToroOpen(false)
-                const entries = await getApplicationToroEntries(application.id)
+                const entries = await getApplicationToroEntries(application.id, 50)
                 setMemoEntries(entries)
               }}
               className="h-full"

@@ -71,8 +71,8 @@ export async function getApplicationToroEntries(applicationId: string, limit: nu
     return []
   }
 
-  // Querying using JSON containment or matching on context field
   // context looks like { source: 'candi_application', applicationId: '...' }
+  // or { source: 'candi_event', applicationId: '...', eventId: '...' }
   const { data, error } = await (supabase as any)
     .from('toro_entries')
     .select('*')
@@ -84,6 +84,32 @@ export async function getApplicationToroEntries(applicationId: string, limit: nu
 
   if (error) {
     console.error('Error fetching application toro entries:', error)
+    return []
+  }
+
+  return data
+}
+
+export async function getEventToroEntries(eventId: string, limit: number = 3) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return []
+  }
+
+  const { data, error } = await (supabase as any)
+    .from('toro_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .contains('context', { eventId })
+    .is('archived_at', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Error fetching event toro entries:', error)
     return []
   }
 
