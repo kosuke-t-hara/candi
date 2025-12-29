@@ -5,6 +5,8 @@ import { createApplication } from "@/app/actions/applications"
 import { addApplicationLink } from "@/app/actions/links"
 import type { ApplicationLink } from "@/lib/mock-data"
 import { LinkSection } from "./link-section"
+import { LoadingSpinner } from "./ui/loading-spinner"
+import { LoadingOverlay } from "./ui/loading-overlay"
 
 interface NewOpportunityBottomSheetProps {
   isOpen: boolean
@@ -376,14 +378,23 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
           <button
             onClick={handleSave}
             disabled={!isFormValid || isPending}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors min-w-[100px] flex items-center justify-center ${
               isFormValid && !isPending ? "bg-blue-600 text-white hover:bg-blue-700" : "cursor-not-allowed bg-gray-200 text-gray-400"
             }`}
           >
-            {isPending ? "保存中..." : "保存して閉じる"}
+            {isPending ? (
+              <div className="flex items-center gap-2">
+                <LoadingSpinner size={16} className="text-white" />
+                <span>保存中...</span>
+              </div>
+            ) : (
+              "保存して閉じる"
+            )}
           </button>
         </div>
       </div>
+      
+      <LoadingOverlay isVisible={isPending} />
     </div>
   )
 }

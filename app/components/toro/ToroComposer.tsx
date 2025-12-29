@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createToroEntry } from '@/app/actions/toro'
-import { Loader2, Mic } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
+import { Mic } from 'lucide-react'
 import { useSpeechToTextJa } from '@/app/hooks/useSpeechToTextJa'
 
 interface ToroComposerProps {
@@ -183,39 +185,33 @@ export function ToroComposer({
           <button
             onClick={handleSave}
             disabled={isSaving || !content.trim()}
-            className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px]"
             type="button"
           >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-black/40" /> : '残す'}
+            {isSaving ? <LoadingSpinner size={16} /> : '残す'}
           </button>
         </div>
       </div>
 
       <div className="relative group min-h-[60vh]">
-        {isListening && (
-          <div className="absolute top-0 right-0 -mt-6 mr-2">
-            <span className="text-[10px] font-light tracking-[0.2em] text-black/20 animate-pulse">
-              聴いています...
-            </span>
-          </div>
-        )}
-        
+        {/* ... existing textarea ... */}
         <textarea
           ref={textareaRef}
           value={content}
           onChange={handleTextChange}
           placeholder={placeholder}
           className="w-full h-full min-h-[50vh] bg-black/[0.01] border border-black/5 rounded-2xl p-6 focus:ring-0 focus:border-black/10 text-lg font-light leading-relaxed placeholder:text-black/10 resize-none outline-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] transition-colors duration-300"
-          autoFocus={!context} // Embed時はautoFocusしない方がいいかも？
+          autoFocus={!context}
         />
-
-        {/* Interim Text (未確定文字) */}
+        {/* Interim Text */}
         {interimText && (
           <div className="mt-2 text-lg font-light leading-relaxed tracking-wide text-black/30 italic opacity-60 animate-in fade-in duration-300">
             {interimText}
           </div>
         )}
       </div>
+      
+      <LoadingOverlay isVisible={isSaving} />
     </div>
   )
 }

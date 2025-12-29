@@ -3,6 +3,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import { LoadingSpinner } from "./ui/loading-spinner"
+import { LoadingOverlay } from "./ui/loading-overlay"
 import type { ApplicationEvent, ApplicationEventStatus, ApplicationLink } from "@/lib/mock-data"
 import { LinkSection } from "./link-section"
 import { addEventLink, deleteEventLink } from "@/app/actions/links"
@@ -210,6 +212,7 @@ export function AddEventBottomSheet({
   existingEvent,
 }: AddEventBottomSheetProps) {
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [eventType, setEventType] = useState<string>("カジュアル面談")
   const [status, setStatus] = useState<ApplicationEventStatus>("confirmed")
   const [date, setDate] = useState("")
@@ -301,28 +304,36 @@ export function AddEventBottomSheet({
     }, 250)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!date || !startTime || !endTime) return
-
-    const newEvent: Omit<ApplicationEvent, "id"> = {
-      type: eventType,
-      status,
-      date,
-      startTime,
-      endTime,
-      title: title || undefined,
-      note,
-      links: pendingLinks,
+    setIsSaving(true)
+    try {
+      const newEvent: Omit<ApplicationEvent, "id"> = {
+        type: eventType,
+        status,
+        date,
+        startTime,
+        endTime,
+        title: title || undefined,
+        note,
+        links: pendingLinks,
+      }
+      await onSave(newEvent)
+      handleClose()
+    } finally {
+      setIsSaving(false)
     }
-
-    onSave(newEvent)
-    handleClose()
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (onDelete) {
-      onDelete()
-      handleClose()
+      setIsSaving(true)
+      try {
+        await onDelete()
+        handleClose()
+      } finally {
+        setIsSaving(false)
+      }
     }
   }
 
@@ -532,21 +543,31 @@ export function AddEventBottomSheet({
                 type="button"
                 onClick={handleClose}
                 className="px-4 py-2 text-sm font-medium text-[#6B7280] hover:text-[#1A1A1A] transition-colors"
+                disabled={isSaving}
               >
                 キャンセル
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={!isValid}
-                className="px-6 py-2 bg-[#2F80ED] text-white text-sm font-semibold rounded-full hover:bg-blue-600 disabled:bg-[#E5E7EB] disabled:text-[#A1A1AA] disabled:cursor-not-allowed transition-colors shadow-sm"
+                disabled={!isValid || isSaving}
+                className="px-6 py-2 bg-[#2F80ED] text-white text-sm font-semibold rounded-full hover:bg-blue-600 disabled:bg-[#E5E7EB] disabled:text-[#A1A1AA] disabled:cursor-not-allowed transition-colors shadow-sm min-w-[120px] flex items-center justify-center"
               >
-                {mode === "edit" ? "変更を保存" : "イベントを保存"}
+                {isSaving ? (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner size={16} className="text-white" />
+                    <span>保存中...</span>
+                  </div>
+                ) : (
+                  mode === "edit" ? "変更を保存" : "イベントを保存"
+                )}
               </button>
             </div>
           </div>
         </div>
       </div>
+      
+      <LoadingOverlay isVisible={isSaving} className="z-[100]" />
 
       {isDatePickerOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)} />}
     </>

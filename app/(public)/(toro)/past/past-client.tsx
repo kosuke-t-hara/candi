@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Archive, RotateCcw } from 'lucide-react'
 import { archiveToroEntry, unarchiveToroEntry } from '@/app/actions/toro'
+import { LoadingOverlay } from '@/components/ui/loading-overlay'
 
 interface Entry {
   id: string
@@ -284,6 +285,9 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
           </div>
         </div>
       )}
+      {/* ... existing modal code ... */}
+      
+      <LoadingOverlay isVisible={isProcessing} />
     </>
   )
 }

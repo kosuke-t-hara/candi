@@ -2,6 +2,7 @@ import { useState, useTransition, useEffect } from "react"
 import { MaskToggle } from "./mask-toggle"
 import { Tag } from "./ui/tag"
 import { Check, Edit, X } from "lucide-react"
+import { LoadingSpinner } from "./ui/loading-spinner"
 import type { Database } from "@/lib/types/database"
 import { updateProfile } from "@/app/actions/profile"
 
@@ -79,9 +80,9 @@ export function CandidateSummary({
                 <button
                   onClick={handleSaveName}
                   disabled={isPending}
-                  className="p-1 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD]"
+                  className="p-1 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD] flex items-center justify-center min-w-[28px] min-h-[28px]"
                 >
-                  <Check className="h-5 w-5" />
+                  {isPending ? <LoadingSpinner size={16} className="text-[#34A853]" /> : <Check className="h-5 w-5" />}
                 </button>
                 <button
                   onClick={() => setIsEditingName(false)}
@@ -122,9 +123,9 @@ export function CandidateSummary({
                   <button
                     onClick={handleSaveIncome}
                     disabled={isPending}
-                    className="p-0.5 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD] ml-1"
+                    className="p-0.5 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD] ml-1 flex items-center justify-center min-w-[20px] min-h-[20px]"
                   >
-                    <Check className="h-4 w-4" />
+                    {isPending ? <LoadingSpinner size={12} className="text-[#34A853]" /> : <Check className="h-4 w-4" />}
                   </button>
                   <button
                     onClick={() => setIsEditingIncome(false)}

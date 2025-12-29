@@ -4,6 +4,8 @@ import type React from "react"
 
 import { useState, useEffect, useTransition } from "react"
 import { X, ChevronDown, ChevronUp, Plus, MoreVertical, Edit, Check, ExternalLink } from "lucide-react"
+import { LoadingSpinner } from "./ui/loading-spinner"
+import { LoadingOverlay } from "./ui/loading-overlay"
 import type { Application, ApplicationEvent } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { updateApplication } from "@/app/actions/applications"
@@ -95,6 +97,7 @@ export function ApplicationDetailModal({
   const [isEditingMemo, setIsEditingMemo] = useState(false)
   const [editedMemo, setEditedMemo] = useState("")
 
+  const [isProcessing, setIsProcessing] = useState(false)
   const [isToroOpen, setIsToroOpen] = useState(false)
 
   const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false)
@@ -217,24 +220,39 @@ export function ApplicationDetailModal({
     return b.startTime.localeCompare(a.startTime)
   })
 
-  const handleAddEvent = (event: Omit<ApplicationEvent, "id">) => {
-    onEventAdded(application.id, event)
-    setIsAddEventOpen(false)
-  }
-
-  const handleUpdateEvent = (event: Omit<ApplicationEvent, "id">) => {
-    if (editingEvent) {
-      onEventUpdated(application.id, editingEvent.id, event)
-      setEditingEvent(null)
+  const handleAddEvent = async (event: Omit<ApplicationEvent, "id">) => {
+    setIsProcessing(true)
+    try {
+      await onEventAdded(application.id, event)
       setIsAddEventOpen(false)
+    } finally {
+      setIsProcessing(false)
     }
   }
 
-  const handleDeleteEvent = () => {
+  const handleUpdateEvent = async (event: Omit<ApplicationEvent, "id">) => {
     if (editingEvent) {
-      onEventDeleted(application.id, editingEvent.id)
-      setEditingEvent(null)
-      setIsAddEventOpen(false)
+      setIsProcessing(true)
+      try {
+        await onEventUpdated(application.id, editingEvent.id, event)
+        setEditingEvent(null)
+        setIsAddEventOpen(false)
+      } finally {
+        setIsProcessing(false)
+      }
+    }
+  }
+
+  const handleDeleteEvent = async () => {
+    if (editingEvent) {
+      setIsProcessing(true)
+      try {
+        await onEventDeleted(application.id, editingEvent.id)
+        setEditingEvent(null)
+        setIsAddEventOpen(false)
+      } finally {
+        setIsProcessing(false)
+      }
     }
   }
 
@@ -295,9 +313,9 @@ export function ApplicationDetailModal({
                        <button 
                          onClick={handleSaveTitle}
                          disabled={isPending}
-                         className="p-1 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD]"
+                         className="p-1 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD] flex items-center justify-center min-w-[28px] min-h-[28px]"
                        >
-                         <Check className="h-5 w-5" />
+                         {isPending ? <LoadingSpinner size={16} className="text-[#34A853]" /> : <Check className="h-5 w-5" />}
                        </button>
                     </div>
 
@@ -333,9 +351,9 @@ export function ApplicationDetailModal({
                        <button 
                          onClick={handleSavePosition}
                          disabled={isPending}
-                         className="p-0.5 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD]"
+                         className="p-0.5 rounded-full bg-[#E7F8ED] text-[#34A853] hover:bg-[#D1F2DD] flex items-center justify-center min-w-[24px] min-h-[24px]"
                        >
-                         <Check className="h-4 w-4" />
+                         {isPending ? <LoadingSpinner size={14} className="text-[#34A853]" /> : <Check className="h-4 w-4" />}
                        </button>
                     </div>
                   ) : (
@@ -687,6 +705,7 @@ export function ApplicationDetailModal({
           </div>
         </SheetContent>
       </Sheet>
+      <LoadingOverlay isVisible={isPending || isProcessing} />
     </>
   )
 }
