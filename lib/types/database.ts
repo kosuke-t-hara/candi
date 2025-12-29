@@ -14,6 +14,8 @@ export interface Database {
           id: string
           display_name: string | null
           desired_annual_income: number | null
+          desired_annual_income_min: number | null
+          desired_annual_income_max: number | null
           bio: string | null
           created_at: string
           updated_at: string
@@ -22,6 +24,8 @@ export interface Database {
           id: string
           display_name?: string | null
           desired_annual_income?: number | null
+          desired_annual_income_min?: number | null
+          desired_annual_income_max?: number | null
           bio?: string | null
           created_at?: string
           updated_at?: string
@@ -30,6 +34,8 @@ export interface Database {
           id?: string
           display_name?: string | null
           desired_annual_income?: number | null
+          desired_annual_income_min?: number | null
+          desired_annual_income_max?: number | null
           bio?: string | null
           created_at?: string
           updated_at?: string

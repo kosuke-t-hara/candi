@@ -29,12 +29,14 @@ export function CandidateSummary({
   const [editedName, setEditedName] = useState("")
 
   const [isEditingIncome, setIsEditingIncome] = useState(false)
-  const [editedIncome, setEditedIncome] = useState("")
+  const [editedIncomeMin, setEditedIncomeMin] = useState("")
+  const [editedIncomeMax, setEditedIncomeMax] = useState("")
 
   useEffect(() => {
     if (profile) {
       setEditedName(profile.display_name || "")
-      setEditedIncome(profile.desired_annual_income?.toString() || "")
+      setEditedIncomeMin(profile.desired_annual_income_min?.toString() || "")
+      setEditedIncomeMax(profile.desired_annual_income_max?.toString() || "")
     }
   }, [profile])
 
@@ -48,11 +50,14 @@ export function CandidateSummary({
 
   const handleSaveIncome = () => {
     if (!profile) return
-    const incomeValue = parseInt(editedIncome, 10)
-    if (isNaN(incomeValue)) return // Simple validation
+    const minVal = editedIncomeMin ? parseInt(editedIncomeMin, 10) : null
+    const maxVal = editedIncomeMax ? parseInt(editedIncomeMax, 10) : null
 
     startTransition(async () => {
-      await updateProfile({ desired_annual_income: incomeValue })
+      await updateProfile({ 
+        desired_annual_income_min: minVal,
+        desired_annual_income_max: maxVal 
+      })
       setIsEditingIncome(false)
     })
   }
@@ -110,10 +115,23 @@ export function CandidateSummary({
                   希望年収
                   <input
                     type="number"
-                    value={editedIncome}
-                    onChange={(e) => setEditedIncome(e.target.value)}
-                    className="text-sm text-[#1F2937] border-b border-[#2F80ED] focus:outline-none bg-transparent w-[80px]"
+                    value={editedIncomeMin}
+                    onChange={(e) => setEditedIncomeMin(e.target.value)}
+                    className="text-sm text-[#1F2937] border-b border-[#2F80ED] focus:outline-none bg-transparent w-[60px]"
+                    placeholder="下限"
                     autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveIncome()
+                      if (e.key === "Escape") setIsEditingIncome(false)
+                    }}
+                  />
+                  <span className="text-gray-400">〜</span>
+                  <input
+                    type="number"
+                    value={editedIncomeMax}
+                    onChange={(e) => setEditedIncomeMax(e.target.value)}
+                    className="text-sm text-[#1F2937] border-b border-[#2F80ED] focus:outline-none bg-transparent w-[60px]"
+                    placeholder="上限"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSaveIncome()
                       if (e.key === "Escape") setIsEditingIncome(false)
@@ -136,7 +154,11 @@ export function CandidateSummary({
                 </div>
               ) : (
                 <>
-                  希望年収 {profile?.desired_annual_income ? `${profile.desired_annual_income}万円` : "未設定"}
+                  希望年収 {
+                    (profile?.desired_annual_income_min || profile?.desired_annual_income_max) 
+                      ? `${profile.desired_annual_income_min || "未設定"}万円 〜 ${profile.desired_annual_income_max || "未設定"}万円`
+                      : "未設定"
+                  }
                   {!isMasked && (
                     <button
                       onClick={() => setIsEditingIncome(true)}
