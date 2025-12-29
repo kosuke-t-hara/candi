@@ -62,6 +62,34 @@ export async function getToroEntries(showArchived: boolean = false) {
   return data
 }
 
+export async function getApplicationToroEntries(applicationId: string, limit: number = 3) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return []
+  }
+
+  // Querying using JSON containment or matching on context field
+  // context looks like { source: 'candi_application', applicationId: '...' }
+  const { data, error } = await (supabase as any)
+    .from('toro_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .contains('context', { applicationId })
+    .is('archived_at', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Error fetching application toro entries:', error)
+    return []
+  }
+
+  return data
+}
+
 export async function archiveToroEntry(id: string) {
   const supabase = await createClient()
   

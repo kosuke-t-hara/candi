@@ -17,6 +17,8 @@ import { ToroComposer } from "@/app/components/toro/ToroComposer"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Mic } from "lucide-react"
 
+import { getApplicationToroEntries } from "@/app/actions/toro"
+
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
 function formatDateDisplay(isoDate: string): string {
@@ -94,8 +96,7 @@ export function ApplicationDetailModal({
   const [isEditingPosition, setIsEditingPosition] = useState(false)
   const [editedPosition, setEditedPosition] = useState("")
 
-  const [isEditingMemo, setIsEditingMemo] = useState(false)
-  const [editedMemo, setEditedMemo] = useState("")
+  const [memoEntries, setMemoEntries] = useState<any[]>([])
 
   const [isProcessing, setIsProcessing] = useState(false)
   const [isToroOpen, setIsToroOpen] = useState(false)
@@ -113,14 +114,17 @@ export function ApplicationDetailModal({
   useEffect(() => {
     if (isOpen) {
       setEditedTitle(application.company)
-      setEditedTitle(application.company)
       setIsEditingTitle(false)
       setEditedPosition(application.position)
       setIsEditingPosition(false)
-      setEditedMemo(application.globalNote)
-      setIsEditingMemo(false)
+      
+      const fetchMemos = async () => {
+        const entries = await getApplicationToroEntries(application.id)
+        setMemoEntries(entries)
+      }
+      fetchMemos()
     }
-  }, [isOpen, application.company, application.globalNote])
+  }, [isOpen, application.company, application.id])
 
   const handleSaveTitle = () => {
     if (!editedTitle.trim()) return
@@ -140,12 +144,8 @@ export function ApplicationDetailModal({
     })
   }
 
-  const handleSaveMemo = () => {
-    startTransition(async () => {
-      await updateApplication(application.id, { status_note: editedMemo })
-      setIsEditingMemo(false)
-    })
-  }
+  // handleSaveMemo removed as we now use Toro entries
+
 
   useEffect(() => {
     if (isOpen) {
@@ -574,65 +574,41 @@ export function ApplicationDetailModal({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold text-[#1A1A1A] tracking-[0.25px]">この応募のメモ</h3>
-                {!isMasked && (
-                  <button
-                    onClick={() => setIsToroOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-black/5 hover:bg-black/10 text-black/60 rounded-full text-xs font-medium transition-colors"
-                  >
-                    <Mic className="w-3.5 h-3.5" />
-                    <span>Toroする</span>
-                  </button>
-                )}
               </div>
-              <div className="rounded-[14px] bg-[#F5F6F8] p-4 group relative">
+              <div 
+                className="rounded-[14px] bg-[#F5F6F8] p-4 group relative cursor-pointer hover:bg-[#F0F1F4] transition-all min-h-[60px]"
+                onClick={() => !isMasked && setIsToroOpen(true)}
+              >
                 {isMasked ? (
                   <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
-                ) : isEditingMemo ? (
-                   <div className="space-y-3">
-                     <textarea
-                       value={editedMemo}
-                       onChange={(e) => setEditedMemo(e.target.value)}
-                       className="w-full min-h-[100px] p-3 rounded-lg border border-[#E5E7EB] text-sm text-[#333] focus:outline-none focus:ring-2 focus:ring-[#2F80ED] bg-white resize-none"
-                       placeholder="メモを入力..."
-                       autoFocus
-                     />
-                     <div className="flex justify-end gap-2">
-                       <button
-                         onClick={() => {
-                           setIsEditingMemo(false)
-                           setEditedMemo(application.globalNote)
-                         }}
-                         className="px-3 py-1.5 text-xs font-medium text-[#6B7280] hover:bg-[#E5E7EB] rounded-md transition-colors"
-                         disabled={isPending}
-                       >
-                         キャンセル
-                       </button>
-                       <button
-                         onClick={handleSaveMemo}
-                         className="px-3 py-1.5 text-xs font-medium text-white bg-[#2F80ED] hover:bg-blue-600 rounded-md transition-colors shadow-sm"
-                         disabled={isPending}
-                       >
-                         {isPending ? "保存中..." : "保存"}
-                       </button>
-                     </div>
-                   </div>
                 ) : (
                   <>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => setIsEditingMemo(true)}
-                        className="p-2 rounded-full hover:bg-white/50 text-[#9CA3AF] hover:text-[#2F80ED] transition-colors"
-                        aria-label="メモを編集"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
+                    <div className="absolute top-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-black/5">
+                      <span className="text-xs font-medium text-[#2F80ED] flex items-center gap-1">
+                        💭Toroする
+                      </span>
                     </div>
-                    <p 
-                      className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setIsEditingMemo(true)}
-                    >
-                      {application.globalNote || "メモはまだありません"}
-                    </p>
+                    {memoEntries.length > 0 ? (
+                      <div className="space-y-4">
+                        {memoEntries.map((entry, idx) => (
+                          <div key={entry.id} className={`${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
+                            <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                              {entry.content}
+                            </p>
+                            <p className="text-[10px] text-[#A1A1AA] mt-1">
+                              {new Date(entry.created_at).toLocaleString('ja-JP', { 
+                                month: 'numeric', 
+                                day: 'numeric', 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#A1A1AA]">まだメモはありません</p>
+                    )}
                   </>
                 )}
               </div>
@@ -686,7 +662,7 @@ export function ApplicationDetailModal({
       <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
         <SheetContent side="bottom" className="h-[80vh] rounded-t-[20px] p-0 max-w-[640px] mx-auto inset-x-0">
           <SheetHeader className="p-6 pb-2">
-            <SheetTitle className="text-lg font-light tracking-wide text-black/70">Toroする</SheetTitle>
+            <SheetTitle className="text-lg font-light tracking-wide text-black/70"></SheetTitle>
           </SheetHeader>
           <div className="px-6 pt-4 pb-6 h-full overflow-y-auto">
             <ToroComposer 
@@ -696,9 +672,10 @@ export function ApplicationDetailModal({
                 applicationId: application.id,
                 companyName: application.company 
               }}
-              onSaved={() => {
+              onSaved={async () => {
                 setIsToroOpen(false)
-                // Maybe show toast? existing logic implies simple close is fine
+                const entries = await getApplicationToroEntries(application.id)
+                setMemoEntries(entries)
               }}
               className="h-full"
             />
