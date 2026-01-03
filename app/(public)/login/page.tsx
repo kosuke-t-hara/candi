@@ -77,7 +77,7 @@ function LoginForm() {
         <CardHeader>
           <CardTitle>ログイン</CardTitle>
           <CardDescription>
-            Candi アカウントにログインしてください
+            Toro アカウントにログインしてください
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>

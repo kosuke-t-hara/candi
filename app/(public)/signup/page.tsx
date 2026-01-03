@@ -96,7 +96,7 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle>新規登録</CardTitle>
           <CardDescription>
-            Candi アカウントを作成して始めましょう
+            Toro アカウントを作成して始めましょう
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>
