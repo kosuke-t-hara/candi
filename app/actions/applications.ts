@@ -18,7 +18,28 @@ export async function getApplications() {
     return []
   }
 
-  return data
+  const { data: userData } = await supabase.auth.getUser()
+  const userId = userData.user?.id
+
+  // Fetch latest Toro entry for each application to show in the "Memo" column
+  const { data: toroEntries } = await (supabase as any)
+    .from('toro_entries')
+    .select('*')
+    .eq('user_id', userId)
+    .is('archived_at', null)
+    .order('created_at', { ascending: false }) as { data: any[] | null }
+
+  const applicationsWithMemos = data.map(app => {
+    const latestMemo = toroEntries?.find(entry => 
+      entry.context && typeof entry.context === 'object' && entry.context.applicationId === app.id
+    )
+    return {
+      ...app,
+      latest_memo: latestMemo?.content || null
+    }
+  })
+
+  return applicationsWithMemos
 }
 
 export async function createApplication(formData: FormData) {

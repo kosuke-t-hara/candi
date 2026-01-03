@@ -210,6 +210,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
              </button>
           </div>
         </div>
+{/* <CHANGE> Hidden filtering buttons for now
         <div className="flex gap-1.5 self-end sm:self-auto">
           <button
             onClick={() => setEventFilter("all")}
@@ -242,6 +243,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
             成長ログ
           </button>
         </div>
+        */}
       </div>
       <div className="flex gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-7 md:overflow-x-visible md:pb-0">
         {weekDays.map((day) => {
@@ -345,7 +347,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
         })}
       </div>
       <div className="mt-3 text-center text-xs text-[#6B7280]">
-        この期間の転職活動：{jobEventsCount}件　成長ログ：{growthEventsCount}件
+        この期間の転職活動：{jobEventsCount}件
       </div>
     </div>
   )

@@ -1,15 +1,11 @@
 import type { Application } from "./mock-data"
 
-export type SortMode = "nextEvent" | "stage" | "myBall" | "archived"
+export type SortMode = "nextEvent" | "stage" | "archived"
 export type SortDirection = "asc" | "desc"
 
-const stageOrder = ["ヘッドハンター面談", "カジュアル面談", "書類選考", "一次面接", "二次面接", "最終面接"] as const
-
-const statusOrderForMyBall = ["こっちボール", "調整中", "企業ボール", "確定"] as const
-
 export function parseTimeToMinutes(time: string | undefined): number | null {
-  if (!time) return null
-  const match = time.match(/^(\d{1,2}):(\d{2})$/)
+  if (!time || time === "ー") return null
+  const match = time.match(/^(\d{1,2}):(\d{1,2})$/)
   if (!match) return null
   const hours = Number.parseInt(match[1], 10)
   const minutes = Number.parseInt(match[2], 10)
@@ -17,32 +13,51 @@ export function parseTimeToMinutes(time: string | undefined): number | null {
 }
 
 export function parseDateToValue(dateStr: string | undefined): number | null {
-  if (!dateStr) return null
-
-  // Handle "YYYY-MM-DD" format
-  const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!dateStr || dateStr === "ー") return null
+  const isoMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
   if (isoMatch) {
     const year = Number.parseInt(isoMatch[1], 10)
     const month = Number.parseInt(isoMatch[2], 10)
     const day = Number.parseInt(isoMatch[3], 10)
     return year * 10000 + month * 100 + day
   }
-
-  // Handle "MM/DD（曜）" format
   const jpMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})/)
   if (jpMatch) {
     const month = Number.parseInt(jpMatch[1], 10)
     const day = Number.parseInt(jpMatch[2], 10)
-    return 2025 * 10000 + month * 100 + day
+    return 2026 * 10000 + month * 100 + day
   }
-
   return null
 }
 
-export function getDateTimeSortValue(app: Application): number {
-  const dateValue = parseDateToValue(app.scheduledDate) ?? Number.MAX_SAFE_INTEGER
-  const timeValue = parseTimeToMinutes(app.startTime) ?? 9999 // No time = end of day
-  return dateValue * 10000 + timeValue
+/**
+ * Derives the comparison value for an application based on its events.
+ * Logic matches getDisplayEventLabel for synchronization.
+ */
+export function getRelevantEventSortValue(app: Application): number {
+  if (!app.events || app.events.length === 0) {
+    return 99991231 * 10000 // Last fallback
+  }
+
+  // Current time for comparison (system date: 2026-01-03)
+  const now = new Date("2026-01-03T00:00:00").getTime()
+  
+  const parsedEvents = app.events.map(e => {
+    const dateVal = parseDateToValue(e.date) || 99991231
+    const timeVal = parseTimeToMinutes(e.startTime) || 0
+    const timestamp = new Date(`${e.date}T${e.startTime || '00:00'}`).getTime()
+    return { timestamp, sortKey: dateVal * 10000 + timeVal }
+  }).sort((a, b) => a.timestamp - b.timestamp)
+
+  const futureEvent = parsedEvents.find(e => e.timestamp >= now)
+  if (futureEvent) {
+    // Future events are prioritized (lowest sortKey among futures)
+    return futureEvent.sortKey
+  }
+
+  // Past events: show most recent first, but after all future events
+  const lastEvent = parsedEvents[parsedEvents.length - 1]
+  return 88880000 * 10000 + (100000000 - lastEvent.sortKey) 
 }
 
 export function sortApplications(
@@ -54,36 +69,23 @@ export function sortApplications(
     let result = 0
 
     if (sortMode === "nextEvent") {
-      const aValue = getDateTimeSortValue(a)
-      const bValue = getDateTimeSortValue(b)
-      result = aValue - bValue
-    } else if (sortMode === "stage") {
-      const aStageIndex = stageOrder.indexOf(a.stage as any)
-      const bStageIndex = stageOrder.indexOf(b.stage as any)
-      const ai = aStageIndex === -1 ? Number.MAX_SAFE_INTEGER : aStageIndex
-      const bi = bStageIndex === -1 ? Number.MAX_SAFE_INTEGER : bStageIndex
-      if (ai !== bi) {
-        result = ai - bi
-      } else {
-        const aStatusIndex = statusOrderForMyBall.indexOf(a.status as any)
-        const bStatusIndex = statusOrderForMyBall.indexOf(b.status as any)
-        const asi = aStatusIndex === -1 ? statusOrderForMyBall.length : aStatusIndex
-        const bsi = bStatusIndex === -1 ? statusOrderForMyBall.length : bStatusIndex
-        if (asi !== bsi) result = asi - bsi
-        else result = 0
-      }
-    } else if (sortMode === "myBall") {
-      const aStatusIndex = statusOrderForMyBall.indexOf(a.status as any)
-      const bStatusIndex = statusOrderForMyBall.indexOf(b.status as any)
-      const asi = aStatusIndex === -1 ? statusOrderForMyBall.length : aStatusIndex
-      const bsi = bStatusIndex === -1 ? statusOrderForMyBall.length : bStatusIndex
-      if (asi !== bsi) {
-        result = asi - bsi
-      } else {
-        const aValue = getDateTimeSortValue(a)
-        const bValue = getDateTimeSortValue(b)
+      const aValue = getRelevantEventSortValue(a)
+      const bValue = getRelevantEventSortValue(b)
+      if (aValue !== bValue) {
         result = aValue - bValue
+      } else {
+        result = (b.selectionPhase || 0) - (a.selectionPhase || 0)
       }
+    } else if (sortMode === "stage") {
+      const aPhase = a.selectionPhase || 0
+      const bPhase = b.selectionPhase || 0
+      if (aPhase !== bPhase) {
+        result = bPhase - aPhase
+      } else {
+        result = getRelevantEventSortValue(a) - getRelevantEventSortValue(b)
+      }
+    } else if (sortMode === "archived") {
+      result = getRelevantEventSortValue(b) - getRelevantEventSortValue(a)
     }
 
     return sortDirection === "desc" ? -result : result

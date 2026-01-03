@@ -13,7 +13,8 @@ import { WeeklySchedule } from "@/components/weekly-schedule"
 import { ApplicationDetailModal } from "@/components/application-detail-modal"
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import { addEventLink } from "@/app/actions/links"
-import { SortControls, type SortMode, type SortDirection } from "@/components/sort-controls"
+import { SortControls } from "@/components/sort-controls"
+import { type SortMode, type SortDirection } from "@/lib/sort-utils"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
 
@@ -128,7 +129,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
   }
 
   const handleSortDirectionToggle = () => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+    setSortDirection((prev: SortDirection) => (prev === "asc" ? "desc" : "asc"))
   }
 
   const handleApplicationClick = (id: string) => {
@@ -142,7 +143,8 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       formData.append("kind", mapEventTypeToKind(event.type))
       formData.append("starts_at", `${event.date}T${event.startTime}:00`)
       formData.append("ends_at", `${event.date}T${event.endTime}:00`)
-      formData.append("outcome", event.status === "confirmed" ? "scheduled" : "scheduled")
+      formData.append("outcome", "scheduled")
+      formData.append("status", event.status)
       formData.append("notes", event.note || "")
       
       const newEvent = await createEvent(applicationId, formData)
@@ -162,7 +164,8 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       formData.append("kind", mapEventTypeToKind(event.type))
       formData.append("starts_at", `${event.date}T${event.startTime}:00`)
       formData.append("ends_at", `${event.date}T${event.endTime}:00`)
-      formData.append("outcome", event.status === "confirmed" ? "scheduled" : "scheduled")
+      formData.append("outcome", "scheduled")
+      formData.append("status", event.status)
       formData.append("notes", event.note || "")
       
       await updateEvent(eventId, formData)

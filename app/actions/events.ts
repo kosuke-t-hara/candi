@@ -38,6 +38,7 @@ export async function createEvent(applicationId: string, formData: FormData) {
   const starts_at = formData.get('starts_at') as string
   const ends_at = formData.get('ends_at') as string | null
   const outcome = formData.get('outcome') as Database['public']['Tables']['application_events']['Row']['outcome'] | null
+  const status = formData.get('status') as string | null
   const notes = formData.get('notes') as string | null
   
   const { data: newEvent, error } = await (supabase as any).from('application_events').insert({
@@ -47,7 +48,7 @@ export async function createEvent(applicationId: string, formData: FormData) {
     kind: kind || 'other',
     starts_at,
     ends_at: ends_at || null,
-    outcome: outcome || 'scheduled',
+    outcome: (formData.get('status') === 'candidate' ? 'unknown' : (outcome || 'scheduled')),
     notes: notes || null,
   }).select().single()
 
@@ -102,6 +103,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const starts_at = formData.get('starts_at') as string
   const ends_at = formData.get('ends_at') as string | null
   const outcome = formData.get('outcome') as Database['public']['Tables']['application_events']['Row']['outcome'] | null
+  const status = formData.get('status') as string | null
   const notes = formData.get('notes') as string | null
   
   const { data, error } = await (supabase as any).from('application_events').update({
@@ -109,7 +111,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     kind: kind || 'other',
     starts_at,
     ends_at: ends_at || null,
-    outcome: outcome || 'scheduled',
+    outcome: (formData.get('status') === 'candidate' ? 'unknown' : (outcome || 'scheduled')),
     notes: notes || null,
   }).eq('id', eventId)
   .select('application_id')

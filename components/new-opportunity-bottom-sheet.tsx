@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from "react"
 import { createApplication } from "@/app/actions/applications"
 import { addApplicationLink } from "@/app/actions/links"
+import { createToroEntry } from "@/app/actions/toro"
 import type { ApplicationLink } from "@/lib/mock-data"
 import { LinkSection } from "./link-section"
 import { LoadingSpinner } from "./ui/loading-spinner"
@@ -68,9 +69,29 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
 
       const newApp = await createApplication(formData)
       
-      if (newApp && pendingLinks.length > 0) {
-        for (const link of pendingLinks) {
-          await addApplicationLink(newApp.id, link.url, link.label || undefined)
+      if (newApp) {
+        // Create a single Toro entry for both source detail and next action
+        const entries = []
+        if (sourceDetail) {
+          const sourceLabel = source === "ヘッドハンター" ? "紹介元" : "紹介"
+          entries.push(`${sourceLabel}: ${sourceDetail}`)
+        }
+        if (nextAction) {
+          entries.push(nextAction)
+        }
+
+        if (entries.length > 0) {
+          await createToroEntry(entries.join("\n"), {
+            source: 'candi_application',
+            applicationId: newApp.id,
+            companyName: company
+          })
+        }
+
+        if (pendingLinks.length > 0) {
+          for (const link of pendingLinks) {
+            await addApplicationLink(newApp.id, link.url, link.label || undefined)
+          }
         }
       }
 

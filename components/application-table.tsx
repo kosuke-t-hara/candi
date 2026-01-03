@@ -6,7 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
-import { getStageLabel, getDisplayEventLabel } from "@/lib/selection-phase-utils"
+import { getStageLabel, getDisplayEventLabel, getDisplayStatus } from "@/lib/selection-phase-utils"
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
 
@@ -40,7 +40,7 @@ export function ApplicationTable({
   onSortModeChange,
   onSortDirectionToggle,
   onApplicationClick,
-  applications, // Added applications parameter
+  applications,
 }: ApplicationTableProps) {
   const sortedApplications = sortApplications(applications, sortMode, sortDirection)
 
@@ -62,7 +62,7 @@ export function ApplicationTable({
               <th className="px-4 py-3 font-medium min-w-[200px] w-1/4">企業</th>
               <th className="px-4 py-3 font-medium min-w-[120px]">紹介元</th>
               <th className="px-4 py-3 font-medium min-w-[80px]">状況</th>
-              <th className="px-4 py-3 font-medium">アクション / メモ</th>
+              <th className="px-4 py-3 font-medium">メモ</th>
             </tr>
           </thead>
           <AnimatePresence mode="popLayout">
@@ -100,31 +100,30 @@ export function ApplicationTable({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        app.applicationStatus === "closed"
-                         ? "bg-[#F3F4F6] text-[#A1A1AA]"
-                         : app.status === "確定"
-                          ? "bg-[#E7F8ED] text-[#34A853]"
-                          : app.status === "相手ボール"
-                            ? "bg-[#FFF7DA] text-[#E6B400]"
-                            : app.status === "落選"
-                              ? "bg-[#FFEBEE] text-[#E57373]"
-                              : "bg-[#F3F4F6] text-[#A1A1AA]"
-                      }`}
-                    >
-                      {app.applicationStatus === "closed" ? "終了" : app.status}
-                    </span>
+                    {(() => {
+                      const { label, color } = getDisplayStatus(app)
+                      return (
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            color === "gray"
+                              ? "bg-[#F3F4F6] text-[#A1A1AA]"
+                              : color === "green"
+                                ? "bg-[#E7F8ED] text-[#34A853]"
+                                : color === "yellow"
+                                  ? "bg-[#FFF7DA] text-[#E6B400]"
+                                  : color === "red"
+                                    ? "bg-[#FFEBEE] text-[#E57373]"
+                                    : "bg-[#F3F4F6] text-[#A1A1AA]"
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      )
+                    })()}
                   </td>
 
                   <td className="px-4 py-3">
-                    {app.nextAction && app.nextAction !== "なし" && (
-                      <div className="text-sm text-[#333]">{app.nextAction}</div>
-                    )}
-                    {app.memo && app.memo !== "ー" && <div className="text-xs text-[#6B7280]">メモ：{app.memo}</div>}
-                    {(!app.nextAction || app.nextAction === "なし") && (!app.memo || app.memo === "ー") && (
-                      <span className="text-xs text-[#A1A1AA]">—</span>
-                    )}
+                    <div className="text-sm text-[#333] line-clamp-2">{app.memo}</div>
                   </td>
                 </motion.tr>
               ))}

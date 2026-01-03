@@ -52,11 +52,11 @@ function mapApplicationToUI(
     position: dbApp.position_title || "",
     stage: dbApp.stage,
     status: "確定", // Default
-    nextAction: "なし", // Default
+    nextAction: dbApp.status_note || "なし", 
     scheduledDate: "", // Logic to find next event date
     startTime: "",
     endTime: "",
-    memo: dbApp.status_note || "",
+    memo: (dbApp as any).latest_memo || dbApp.status_note || "ー",
     sourceType: dbApp.source,
     sourceLabel: "",
     applicationStatus: dbApp.archived ? "closed" : "ongoing",

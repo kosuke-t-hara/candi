@@ -2,9 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { ChevronUp, ChevronDown } from "lucide-react"
-
-export type SortMode = "nextEvent" | "stage" | "myBall" | "archived"
-export type SortDirection = "asc" | "desc"
+import type { SortMode, SortDirection } from "@/lib/sort-utils"
 
 interface SortControlsProps {
   sortMode: SortMode
@@ -50,17 +48,6 @@ export function SortControls({ sortMode, sortDirection, onSortModeChange, onSort
         フェーズ順
         {sortMode === "stage" &&
           (sortDirection === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
-      </button>
-      <button
-        onClick={() => onSortModeChange("myBall")}
-        className={cn(
-          "rounded-full px-3 py-1 text-xs border transition-colors duration-150",
-          sortMode === "myBall"
-            ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
-            : "bg-white text-[#555] border-[#E5E7EB] hover:border-[#A1A1AA]",
-        )}
-      >
-        こっちボール優先
       </button>
       <button
         onClick={() => onSortModeChange("archived")}

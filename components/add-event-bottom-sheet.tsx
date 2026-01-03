@@ -458,7 +458,7 @@ export function AddEventBottomSheet({
                     onChange={() => setStatus("candidate")}
                     className="h-4 w-4 text-[#2F80ED] focus:ring-2 focus:ring-[#2F80ED] focus:ring-offset-0"
                   />
-                  <span className="text-sm text-[#333]">候補日時</span>
+                  <span className="text-sm text-[#333]">調整中</span>
                 </label>
               </div>
             </div>

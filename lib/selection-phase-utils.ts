@@ -217,3 +217,46 @@ export function getDisplayEventLabel(events: ApplicationEvent[], currentStage: s
   const lastEvent = sortedEvents[sortedEvents.length - 1]
   return lastEvent.event.type
 }
+
+/**
+ * Derives the overall status label (確定/相手ボール) based on the most relevant event.
+ */
+export function getDisplayStatus(app: { events: ApplicationEvent[], applicationStatus: string, status: string }): { label: string, color: "green" | "yellow" | "gray" | "red" } {
+  if (app.applicationStatus === "closed") {
+    return { label: "終了", color: "gray" }
+  }
+
+  if (!app.events || app.events.length === 0) {
+    // Fallback if no events
+    if (app.status === "確定") return { label: "確定", color: "green" }
+    if (app.status === "落選") return { label: "落選", color: "red" }
+    return { label: "調整中", color: "yellow" }
+  }
+
+  const now = new Date()
+  
+  // Sort events by date to find the most relevant one
+  const sortedEvents = [...app.events].map(e => ({
+    event: e,
+    date: new Date(`${e.date}T${e.startTime || '00:00'}`)
+  })).sort((a, b) => a.date.getTime() - b.date.getTime())
+
+  // Find first future event or last past event (mirrors getDisplayEventLabel)
+  const futureEventItem = sortedEvents.find(item => item.date >= now)
+  const relevantEvent = futureEventItem ? futureEventItem.event : sortedEvents[sortedEvents.length - 1].event
+
+  // Look at outcome to determine if it's confirmed or adjustment
+  // Map 'unknown' outcome to 'adjustment' for now
+  // @ts-ignore - outcome might not be in all event objects
+  if (relevantEvent.outcome === "unknown") {
+    return { label: "調整中", color: "yellow" }
+  }
+
+  // Otherwise, if outcome is scheduled, treat as confirmed
+  // @ts-ignore
+  if (relevantEvent.outcome === "scheduled" || relevantEvent.status === "confirmed") {
+    return { label: "確定", color: "green" }
+  }
+
+  return { label: "調整中", color: "yellow" }
+}

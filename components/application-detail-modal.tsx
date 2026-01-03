@@ -441,7 +441,7 @@ export function ApplicationDetailModal({
                     <div className="flex-1">
                       <p className="text-xs text-[#6B7280] mb-1">
                         次のイベント：
-                        {nextEvent.status === "candidate" && <span className="text-[#E6B400]">(候補)</span>}
+                        {nextEvent.status === "candidate" && <span className="text-[#E6B400]">(調整中)</span>}
                       </p>
                       <p className="text-sm font-semibold text-[#1A1A1A]">
                         {formatDateDisplay(nextEvent.date)}{" "}
@@ -505,7 +505,7 @@ export function ApplicationDetailModal({
                                 {formatTimeRange(event.startTime, event.endTime)}
                               </span>
                               {event.status === "candidate" && (
-                                <span className="ml-1 text-xs text-[#E6B400]">(候補)</span>
+                                <span className="ml-1 text-xs text-[#E6B400]">(調整中)</span>
                               )}
                             </div>
                             <div className="text-sm text-[#6B7280] mt-0.5">{event.type}</div>
