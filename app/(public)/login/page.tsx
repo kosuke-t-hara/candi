@@ -40,7 +40,9 @@ function LoginForm() {
           setError('ログインに失敗しました。')
         }
       } else {
-        router.push(returnUrl)
+        // If coming from LP, redirect to /candi instead of root/lp
+        const targetUrl = returnUrl.startsWith('/lp') ? '/candi' : returnUrl
+        router.push(targetUrl)
         router.refresh()
       }
     } catch (err) {
@@ -54,10 +56,14 @@ function LoginForm() {
     setLoading(true)
     setError(null)
     try {
+      // Build redirectTo URL with the target return destination
+      const targetUrl = returnUrl.startsWith('/lp') ? '/candi' : returnUrl
+      const redirectTo = `${location.origin}/auth/callback?next=${encodeURIComponent(targetUrl)}`
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${location.origin}/auth/callback`,
+          redirectTo,
         },
       })
       if (error) {

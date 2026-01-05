@@ -10,7 +10,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push("/login")
+    router.push("/lp/candi")
     router.refresh()
   }
 
