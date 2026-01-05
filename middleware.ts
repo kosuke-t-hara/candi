@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = [
   '/write',
   '/tos',
   '/privacy',
+  '/lp',
 ]
 
 export async function middleware(request: NextRequest) {
