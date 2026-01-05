@@ -93,7 +93,7 @@ export function ToroComposer({
   }
 
   const handleSave = async () => {
-    if (!content.trim()) return
+    if (!entryId && !content.trim()) return
 
     if (isListening) {
       stop()
@@ -192,7 +192,7 @@ export function ToroComposer({
 
           <button
             onClick={handleSave}
-            disabled={isSaving || !content.trim()}
+            disabled={isSaving || (!entryId && !content.trim())}
             className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px]"
             type="button"
           >

@@ -238,8 +238,7 @@ export function getDisplayStatus(app: { events: ApplicationEvent[], applicationS
   if (!app.events || app.events.length === 0) {
     // Fallback if no events
     if (app.status === "確定") return { label: "確定", color: "green" }
-    if (app.status === "落選") return { label: "落選", color: "red" }
-    return { label: "調整中", color: "yellow" }
+    return { label: "未定", color: "gray" }
   }
 
   const now = new Date()

@@ -53,7 +53,7 @@ function mapApplicationToUI(
     company: dbApp.company_name,
     position: dbApp.position_title || "",
     stage: dbApp.stage,
-    status: "確定", // Default
+    status: "未定", // Default
     nextAction: dbApp.status_note || "なし", 
     scheduledDate: "", // Logic to find next event date
     startTime: "",
