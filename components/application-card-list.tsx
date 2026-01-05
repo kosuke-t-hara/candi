@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { SortControls } from "./sort-controls"
 import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
-import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
+import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel, getDisplayMemo } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
 import { getStageLabel, getDisplayEventLabel, getDisplayStatus } from "@/lib/selection-phase-utils"
 
@@ -132,7 +132,7 @@ export function ApplicationCardList({
                 {/* Memo */}
                 {app.memo && app.memo !== "ー" && (
                   <div className="text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-2 mt-2 line-clamp-2">
-                    {app.memo}
+                    {getDisplayMemo(app.memo, isMasked)}
                   </div>
                 )}
 

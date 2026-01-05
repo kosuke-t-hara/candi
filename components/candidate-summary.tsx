@@ -68,7 +68,7 @@ export function CandidateSummary({
         <div>
           <h2 className="text-xl font-bold text-[#1F2937] tracking-[0.25px] flex items-center gap-2 group min-h-[32px]">
             {isMasked ? (
-              "Masked User"
+              "***"
             ) : isEditingName ? (
               <div className="flex items-center gap-2">
                 <input

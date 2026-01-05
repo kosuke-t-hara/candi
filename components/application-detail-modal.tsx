@@ -7,7 +7,7 @@ import { X, ChevronDown, ChevronUp, Plus, MoreVertical, Edit, Check, ExternalLin
 import { LoadingSpinner } from "./ui/loading-spinner"
 import { LoadingOverlay } from "./ui/loading-overlay"
 import type { Application, ApplicationEvent } from "@/lib/mock-data"
-import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel } from "@/lib/mask-utils"
+import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel, getDisplayMemo } from "@/lib/mask-utils"
 import { updateApplication } from "@/app/actions/applications"
 import { AddEventBottomSheet } from "./add-event-bottom-sheet"
 import { getStageLabel } from "@/lib/selection-phase-utils"
@@ -640,7 +640,7 @@ export function ApplicationDetailModal({
                 className="rounded-[14px] bg-[#F5F6F8] p-4 relative transition-all min-h-[60px]"
               >
                 {isMasked ? (
-                  <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
+                  <p className="text-sm text-[#333]">***</p>
                 ) : (
                   <>
                     {/* Global notes (entries with no eventId) */}

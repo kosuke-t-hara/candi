@@ -44,3 +44,8 @@ export const getSourceTypeBadgeClasses = (sourceType: SourceType): string => {
       return `${base} bg-gray-100 text-gray-800`
   }
 }
+
+export const getDisplayMemo = (memo: string, isMasked: boolean): string => {
+  if (!isMasked || !memo || memo === "ー") return memo
+  return "***"
+}

@@ -208,7 +208,7 @@ export function ToroComposer({
           value={content}
           onChange={handleTextChange}
           placeholder={placeholder}
-          className="w-full h-full min-h-[50vh] bg-black/[0.01] border border-black/5 rounded-2xl p-6 focus:ring-0 focus:border-black/10 text-lg font-light leading-relaxed placeholder:text-black/10 resize-none outline-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] transition-colors duration-300"
+          className="w-full h-full min-h-[50vh] bg-black/[0.01] border border-black/5 rounded-2xl p-6 focus:ring-0 focus:border-black/10 text-lg font-light leading-relaxed placeholder:text-black/30 resize-none outline-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] transition-colors duration-300"
           autoFocus={!context}
         />
         {/* Interim Text */}
