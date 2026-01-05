@@ -17,11 +17,13 @@ export type EventSheetMode = "add" | "edit"
 const EVENT_TYPES = [
   "カジュアル面談",
   "書類選考",
+  "適性検査",
   "一次面接",
   "二次面接",
   "三次面接",
   "最終面接",
   "オファー面談",
+  "内定受諾",
   "お見送り",
   "辞退",
   "その他",
@@ -318,15 +320,21 @@ export function AddEventBottomSheet({
   }
 
   const handleSave = async () => {
-    if (!date || !startTime || !endTime) return
+    const needsTime = !["書類選考", "内定受諾", "辞退", "お見送り"].includes(eventType)
+    if (!date || (needsTime && (!startTime || !endTime))) return
+    
+    // If time is not needed, ensure it's empty so the server side can handle it
+    const effectiveStartTime = needsTime ? startTime : ""
+    const effectiveEndTime = needsTime ? endTime : ""
+    
     setIsSaving(true)
     try {
       const newEvent: Omit<ApplicationEvent, "id"> = {
         type: eventType,
         status,
         date,
-        startTime,
-        endTime,
+        startTime: effectiveStartTime,
+        endTime: effectiveEndTime,
         title: title || undefined,
         note,
         links: pendingLinks,
@@ -371,7 +379,8 @@ export function AddEventBottomSheet({
     return `${y}/${m}/${d}（${weekdays[dateObj.getDay()]}）`
   }
 
-  const isValid = date && startTime && endTime
+  const needsTime = !["書類選考", "内定受諾", "辞退", "お見送り"].includes(eventType)
+  const isValid = date && (needsTime ? (startTime && endTime) : true)
 
   if (!isOpen) return null
 
@@ -484,8 +493,12 @@ export function AddEventBottomSheet({
                 />
               </div>
 
-              <CustomTimeSelect label="開始時刻" value={startTime} onChange={handleStartTimeChange} />
-              <CustomTimeSelect label="終了時刻" value={endTime} onChange={handleEndTimeChange} />
+              {needsTime && (
+                <>
+                  <CustomTimeSelect label="開始時刻" value={startTime} onChange={handleStartTimeChange} />
+                  <CustomTimeSelect label="終了時刻" value={endTime} onChange={handleEndTimeChange} />
+                </>
+              )}
             </div>
 
             {/* Title */}

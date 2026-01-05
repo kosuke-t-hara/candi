@@ -25,6 +25,7 @@ export function deriveSelectionPhase(
     case 'interviewing':
       return 3
     
+    case 'accepted':
     case 'offered':
       return 5
     
@@ -74,6 +75,8 @@ export function getStageLabel(stage: string): string {
       return '面接中'
     case 'offered':
       return '内定'
+    case 'accepted':
+      return '内定受諾'
     case 'rejected':
       return 'お見送り'
     case 'withdrawn':
@@ -113,6 +116,12 @@ export function deriveAppUpdateFromEvent(eventKind: string): {
       // We map this to 'offered' (Phase 5) to signify the milestone.
       return { stage: 'offered', selection_phase: 5 }
 
+    case 'aptitude_test':
+      return { stage: 'screening', selection_phase: 2 }
+
+    case 'offer_accepted':
+      return { stage: 'accepted', selection_phase: 5 }
+
     case 'rejected':
       return { stage: 'rejected', selection_phase: 1 }
 
@@ -135,15 +144,15 @@ export function deriveStatusFromEvents(events: Array<{ kind: string }>): {
 } {
   // Check for rejection/withdrawal first
   // We prioritize the most recent termination if valid, or just presence.
-  // Simple logic: if ANY rejected/withdrawn exists, the app is closed.
-  const terminationEvent = events.find(e => e.kind === 'rejected' || e.kind === 'withdrawn')
+  // Simple logic: if ANY rejected/withdrawn/offer_accepted exists, the app is closed.
+  const terminationEvent = events.find(e => e.kind === 'rejected' || e.kind === 'withdrawn' || e.kind === 'offer_accepted')
   
   if (terminationEvent) {
     // If terminated, we want to know the max phase reached to preserve the indicator.
     const maxPhase = events.reduce((max, e) => {
         const update = deriveAppUpdateFromEvent(e.kind)
-        // Ignore rejected/withdrawn for phase calculation to report "progress before termination"
-        if (update && e.kind !== 'rejected' && e.kind !== 'withdrawn') {
+        // Ignore termination events for phase calculation to report "progress before termination"
+        if (update && e.kind !== 'rejected' && e.kind !== 'withdrawn' && e.kind !== 'offer_accepted') {
             return Math.max(max, update.selection_phase)
         }
         return max

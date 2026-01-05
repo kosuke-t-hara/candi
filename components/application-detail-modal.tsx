@@ -30,6 +30,7 @@ function formatDateDisplay(isoDate: string): string {
 }
 
 function formatTimeRange(startTime: string, endTime: string): string {
+  if (startTime === '00:00' || !startTime) return ""
   return `${startTime}〜${endTime}`
 }
 

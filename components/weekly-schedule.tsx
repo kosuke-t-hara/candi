@@ -15,9 +15,12 @@ const PHASE_COLORS: Record<string, string> = {
   二次面接: "#A95FFF",
   最終面接: "#D86FFF",
   内定: "#48C774",
+  内定受諾: "#48C774",
   オファー面談: "#48C774",
+  適性検査: "#4A90E2",
   辞退: "#B0B0B0",
   見送り: "#B0B0B0",
+  お見送り: "#B0B0B0",
   その他: "#B0B0B0",
 }
 
@@ -100,6 +103,7 @@ function getWeekDays(startDate: Date): Date[] {
 }
 
 function formatTimeRange(startTime: string, endTime: string): string {
+  if (startTime === '00:00' || !startTime) return ""
   return `${startTime}〜${endTime}`
 }
 

@@ -72,10 +72,11 @@ export async function createEvent(applicationId: string, formData: FormData) {
         currentApp && 
         (currentApp.selection_phase < update.selection_phase || 
          update.stage === 'rejected' || 
-         update.stage === 'withdrawn')
+         update.stage === 'withdrawn' ||
+         update.stage === 'accepted')
 
       if (shouldUpdate) {
-        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn'
+        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn' || update.stage === 'accepted'
         await updateApplication(applicationId, {
           stage: update.stage,
           selection_phase: isArchived ? currentApp.selection_phase : update.selection_phase,
@@ -138,10 +139,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
        currentApp && 
        (currentApp.selection_phase < update.selection_phase || 
         update.stage === 'rejected' || 
-        update.stage === 'withdrawn')
+        update.stage === 'withdrawn' ||
+        update.stage === 'accepted')
 
      if (shouldUpdate) {
-        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn'
+        const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn' || update.stage === 'accepted'
        await updateApplication(applicationId, {
          stage: update.stage,
          selection_phase: isArchived ? currentApp.selection_phase : update.selection_phase,

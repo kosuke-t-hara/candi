@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react'
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loadingType, setLoadingType] = useState<'email' | 'google' | 'github' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -24,7 +24,7 @@ function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setLoadingType('email')
     setError(null)
 
     try {
@@ -48,12 +48,12 @@ function LoginForm() {
     } catch (err) {
       setError('予期せぬエラーが発生しました。')
     } finally {
-      setLoading(false)
+      setLoadingType(null)
     }
   }
 
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    setLoading(true)
+    setLoadingType(provider)
     setError(null)
     try {
       // Build redirectTo URL with the target return destination
@@ -116,8 +116,8 @@ function LoginForm() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pt-6">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
+            <Button type="submit" className="w-full" disabled={!!loadingType}>
+              {loadingType === 'email' ? (
                 <div className="flex items-center gap-2">
                   <LoadingSpinner className="text-primary-foreground" size={16} />
                   <span>ログイン中...</span>
@@ -140,10 +140,10 @@ function LoginForm() {
               <Button 
                 variant="outline" 
                 type="button" 
-                disabled={loading}
+                disabled={!!loadingType}
                 onClick={() => handleOAuthLogin('google')}
               >
-                {loading ? (
+                {loadingType === 'google' ? (
                   <LoadingSpinner size={16} />
                 ) : (
                   <>
@@ -157,10 +157,10 @@ function LoginForm() {
               <Button 
                 variant="outline" 
                 type="button" 
-                disabled={loading}
+                disabled={!!loadingType}
                 onClick={() => handleOAuthLogin('github')}
               >
-                {loading ? (
+                {loadingType === 'github' ? (
                   <LoadingSpinner size={16} />
                 ) : (
                   <>

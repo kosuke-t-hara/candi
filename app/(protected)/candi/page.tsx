@@ -16,6 +16,8 @@ function mapKindToEventType(kind: string): string {
     "interview_3rd": "三次面接",
     "interview_final": "最終面接",
     "offer_meeting": "オファー面談",
+    "offer_accepted": "内定受諾",
+    "aptitude_test": "適性検査",
     "rejected": "お見送り",
     "withdrawn": "辞退",
     "other": "その他",

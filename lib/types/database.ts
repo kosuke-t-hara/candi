@@ -48,7 +48,7 @@ export interface Database {
           company_name: string
           position_title: string | null
           source: 'agent' | 'direct' | 'self' | 'referral' | 'other'
-          stage: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn'
+          stage: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn' | 'accepted'
           priority: number | null
           status_note: string | null
           archived: boolean
@@ -62,7 +62,7 @@ export interface Database {
           company_name: string
           position_title?: string | null
           source: 'agent' | 'direct' | 'self' | 'referral' | 'other'
-          stage?: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn'
+          stage?: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn' | 'accepted'
           priority?: number | null
           status_note?: string | null
           archived?: boolean
@@ -76,7 +76,7 @@ export interface Database {
           company_name?: string
           position_title?: string | null
           source?: 'agent' | 'direct' | 'self' | 'referral' | 'other'
-          stage?: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn'
+          stage?: 'research' | 'applied' | 'screening' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn' | 'accepted'
           priority?: number | null
           status_note?: string | null
           archived?: boolean
@@ -91,7 +91,7 @@ export interface Database {
           user_id: string
           application_id: string
           title: string | null
-          kind: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
+          kind: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'aptitude_test' | 'offer_accepted' | 'other'
           starts_at: string
           ends_at: string | null
           location: string | null
@@ -105,7 +105,7 @@ export interface Database {
           user_id: string
           application_id: string
           title?: string | null
-          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
+          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'aptitude_test' | 'offer_accepted' | 'other'
           starts_at: string
           ends_at?: string | null
           location?: string | null
@@ -119,7 +119,7 @@ export interface Database {
           user_id?: string
           application_id?: string
           title?: string | null
-          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'other'
+          kind?: 'casual_talk' | 'screening_call' | 'interview_1st' | 'interview_2nd' | 'interview_3rd' | 'interview_final' | 'offer_meeting' | 'rejected' | 'withdrawn' | 'aptitude_test' | 'offer_accepted' | 'other'
           starts_at?: string
           ends_at?: string | null
           location?: string | null

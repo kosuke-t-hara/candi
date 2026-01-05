@@ -23,11 +23,13 @@ function mapEventTypeToKind(type: string): Database['public']['Tables']['applica
   const mapping: Record<string, Database['public']['Tables']['application_events']['Row']['kind']> = {
     "カジュアル面談": "casual_talk",
     "書類選考": "screening_call",
+    "適性検査": "aptitude_test",
     "一次面接": "interview_1st",
     "二次面接": "interview_2nd",
     "三次面接": "interview_3rd",
     "最終面接": "interview_final",
     "オファー面談": "offer_meeting",
+    "内定受諾": "offer_accepted",
     "お見送り": "rejected",
     "辞退": "withdrawn",
     "その他": "other",
@@ -40,11 +42,13 @@ function mapKindToEventType(kind: string): string {
   const mapping: Record<string, string> = {
     "casual_talk": "カジュアル面談",
     "screening_call": "書類選考",
+    "aptitude_test": "適性検査",
     "interview_1st": "一次面接",
     "interview_2nd": "二次面接",
     "interview_3rd": "三次面接",
     "interview_final": "最終面接",
     "offer_meeting": "オファー面談",
+    "offer_accepted": "内定受諾",
     "rejected": "お見送り",
     "withdrawn": "辞退",
     "other": "その他",
@@ -141,8 +145,8 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       const formData = new FormData()
       formData.append("title", event.title || event.type)
       formData.append("kind", mapEventTypeToKind(event.type))
-      formData.append("starts_at", `${event.date}T${event.startTime}:00`)
-      formData.append("ends_at", `${event.date}T${event.endTime}:00`)
+      formData.append("starts_at", `${event.date}T${event.startTime || '00:00'}:00`)
+      formData.append("ends_at", `${event.date}T${event.endTime || '00:00'}:00`)
       formData.append("outcome", "scheduled")
       formData.append("status", event.status)
       formData.append("notes", event.note || "")
@@ -162,8 +166,8 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       const formData = new FormData()
       formData.append("title", event.title || event.type)
       formData.append("kind", mapEventTypeToKind(event.type))
-      formData.append("starts_at", `${event.date}T${event.startTime}:00`)
-      formData.append("ends_at", `${event.date}T${event.endTime}:00`)
+      formData.append("starts_at", `${event.date}T${event.startTime || '00:00'}:00`)
+      formData.append("ends_at", `${event.date}T${event.endTime || '00:00'}:00`)
       formData.append("outcome", "scheduled")
       formData.append("status", event.status)
       formData.append("notes", event.note || "")
