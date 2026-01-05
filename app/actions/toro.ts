@@ -147,3 +147,32 @@ export async function unarchiveToroEntry(id: string) {
 
   revalidatePath('/past')
 }
+
+export async function updateToroEntry(id: string, content: string) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    throw new Error('User not authenticated')
+  }
+
+  const { data, error } = await (supabase as any)
+    .from('toro_entries')
+    .update({ 
+      content: content,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating toro entry:', error)
+    throw new Error('Failed to update entry')
+  }
+
+  revalidatePath('/past')
+  return data
+}

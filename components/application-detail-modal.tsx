@@ -101,6 +101,8 @@ export function ApplicationDetailModal({
 
   const [isProcessing, setIsProcessing] = useState(false)
   const [isToroOpen, setIsToroOpen] = useState(false)
+  const [editingToroEntry, setEditingToroEntry] = useState<any>(null)
+  const [toroContext, setToroContext] = useState<any>(null)
 
   const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false)
 
@@ -521,6 +523,31 @@ export function ApplicationDetailModal({
                           </button>
                         </div>
 
+                        {/* Event Notes Section Header */}
+                        {!isMasked && (
+                          <div className="flex items-center justify-between mt-2 mb-1">
+                            <span className="text-[10px] font-semibold text-[#A1A1AA] uppercase tracking-wider">メモ</span>
+                            {memoEntries.filter(entry => entry.context?.eventId === event.id).length < 3 && (
+                              <button
+                                onClick={() => {
+                                  setEditingToroEntry(null)
+                                  setToroContext({
+                                    source: 'candi_event',
+                                    applicationId: application.id,
+                                    eventId: event.id,
+                                    eventTitle: event.title || event.type
+                                  })
+                                  setIsToroOpen(true)
+                                }}
+                                className="text-[10px] font-medium text-[#2F80ED] hover:underline flex items-center gap-0.5"
+                              >
+                                <Plus className="h-3 w-3" />
+                                メモを追加
+                              </button>
+                            )}
+                          </div>
+                        )}
+
                         {/* Show Toro entries for this specific event */}
                         {!isMasked && (
                           <div className="mt-2 space-y-2">
@@ -529,7 +556,19 @@ export function ApplicationDetailModal({
                               .slice(0, 3) // Latest 3 for the event
                               .map((entry, idx) => (
                                 <div key={entry.id} className="bg-[#F5F6F8]/50 p-2 rounded-lg group/entry relative">
-                                  <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                                  <div className="absolute top-2 right-2 opacity-0 group-hover/entry:opacity-100 transition-opacity">
+                                    <button 
+                                      onClick={() => {
+                                        setEditingToroEntry(entry)
+                                        setIsToroOpen(true)
+                                      }}
+                                      className="p-1.5 rounded-md bg-white/90 hover:bg-white text-[#6B7280] hover:text-[#2F80ED] shadow-sm border border-black/5"
+                                      title="編集"
+                                    >
+                                      <Edit className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                  <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-8">
                                     {entry.content}
                                   </p>
                                   <p className="text-[10px] text-[#A1A1AA] mt-1">
@@ -539,6 +578,16 @@ export function ApplicationDetailModal({
                                       hour: '2-digit', 
                                       minute: '2-digit' 
                                     })}
+                                    {new Date(entry.updated_at).getTime() - new Date(entry.created_at).getTime() > 10000 && (
+                                      <span className="ml-2">
+                                        (更新: {new Date(entry.updated_at).toLocaleString('ja-JP', { 
+                                          month: 'numeric', 
+                                          day: 'numeric', 
+                                          hour: '2-digit', 
+                                          minute: '2-digit' 
+                                        })})
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                               ))}
@@ -566,24 +615,34 @@ export function ApplicationDetailModal({
                 })}
               </div>
             </div>
-
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-[#1A1A1A] tracking-[0.25px]">この応募のメモ</h3>
+                {!isMasked && memoEntries.filter(entry => !entry.context?.eventId).length < 3 && (
+                  <button
+                    onClick={() => {
+                      setEditingToroEntry(null)
+                      setToroContext({
+                        source: 'candi_application',
+                        applicationId: application.id,
+                        companyName: application.company
+                      })
+                      setIsToroOpen(true)
+                    }}
+                    className="text-xs font-medium text-[#2F80ED] hover:underline flex items-center gap-1"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    メモを追加
+                  </button>
+                )}
               </div>
               <div 
-                className="rounded-[14px] bg-[#F5F6F8] p-4 group relative cursor-pointer hover:bg-[#F0F1F4] transition-all min-h-[60px]"
-                onClick={() => !isMasked && setIsToroOpen(true)}
+                className="rounded-[14px] bg-[#F5F6F8] p-4 relative transition-all min-h-[60px]"
               >
                 {isMasked ? (
                   <p className="text-sm text-[#A1A1AA] italic">メモ：Private</p>
                 ) : (
                   <>
-                    <div className="absolute top-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-black/5">
-                      <span className="text-xs font-medium text-[#2F80ED] flex items-center gap-1">
-                        💭Toroする
-                      </span>
-                    </div>
                     {/* Global notes (entries with no eventId) */}
                     {memoEntries
                       .filter(entry => !entry.context?.eventId)
@@ -593,8 +652,21 @@ export function ApplicationDetailModal({
                           .filter(entry => !entry.context?.eventId)
                           .slice(0, 3)
                           .map((entry, idx) => (
-                          <div key={entry.id} className={`${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
-                            <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                          <div key={entry.id} className={`group/entry relative ${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
+                            <div className={`absolute right-0 opacity-0 group-hover/entry:opacity-100 transition-opacity ${idx !== 0 ? 'top-4' : 'top-0'}`}>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingToroEntry(entry)
+                                  setIsToroOpen(true)
+                                }}
+                                className="p-1 px-1.5 rounded-md bg-white hover:bg-white text-[#6B7280] hover:text-[#2F80ED] shadow-sm border border-black/5"
+                                title="編集"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                            <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-8">
                               {entry.content}
                             </p>
                             <p className="text-[10px] text-[#A1A1AA] mt-1">
@@ -604,6 +676,16 @@ export function ApplicationDetailModal({
                                 hour: '2-digit', 
                                 minute: '2-digit' 
                               })}
+                              {new Date(entry.updated_at).getTime() - new Date(entry.created_at).getTime() > 10000 && (
+                                <span className="ml-2">
+                                  (更新: {new Date(entry.updated_at).toLocaleString('ja-JP', { 
+                                    month: 'numeric', 
+                                    day: 'numeric', 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })})
+                                </span>
+                              )}
                             </p>
                           </div>
                         ))}
@@ -662,21 +744,27 @@ export function ApplicationDetailModal({
         applicationId={application.id}
       />
 
-      <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
+      <Sheet open={isToroOpen} onOpenChange={(open) => {
+        setIsToroOpen(open)
+        if (!open) {
+          setEditingToroEntry(null)
+          setToroContext(null)
+        }
+      }}>
         <SheetContent side="bottom" className="h-[80vh] rounded-t-[20px] p-0 max-w-[640px] mx-auto inset-x-0">
           <SheetHeader className="p-6 pb-2">
             <SheetTitle className="text-lg font-light tracking-wide text-black/70"></SheetTitle>
           </SheetHeader>
           <div className="px-6 pt-4 pb-6 h-full overflow-y-auto">
             <ToroComposer 
-              isAuthenticated={true} // As we are in protected route
-              context={{ 
-                source: 'candi_application', 
-                applicationId: application.id,
-                companyName: application.company 
-              }}
+              isAuthenticated={true} 
+              context={toroContext}
+              entryId={editingToroEntry?.id}
+              defaultValue={editingToroEntry?.content || ''}
               onSaved={async () => {
                 setIsToroOpen(false)
+                setEditingToroEntry(null)
+                setToroContext(null)
                 const entries = await getApplicationToroEntries(application.id, 50)
                 setMemoEntries(entries)
               }}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createToroEntry } from '@/app/actions/toro'
+import { createToroEntry, updateToroEntry } from '@/app/actions/toro'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Mic } from 'lucide-react'
@@ -14,6 +14,7 @@ interface ToroComposerProps {
   onSaved?: () => void
   onContentChange?: (content: string) => void
   context?: any
+  entryId?: string // Add entryId to identify if we are editing
   className?: string
   placeholder?: string
 }
@@ -24,6 +25,7 @@ export function ToroComposer({
   onSaved, 
   onContentChange,
   context,
+  entryId,
   className = '',
   placeholder = "今の気持ちを、そのままに。"
 }: ToroComposerProps) {
@@ -119,11 +121,17 @@ export function ToroComposer({
 
     setIsSaving(true)
     try {
-      // @ts-ignore: createToroEntry signature will be updated later
-      await createToroEntry(content, context)
+      if (entryId) {
+        await updateToroEntry(entryId, content)
+      } else {
+        // @ts-ignore: createToroEntry signature will be updated later
+        await createToroEntry(content, context)
+      }
       
       // 保存成功
-      setContent('')
+      if (!entryId) {
+        setContent('')
+      }
       if (onSaved) {
         onSaved()
       }

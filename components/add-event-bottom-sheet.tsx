@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Plus, Edit } from "lucide-react"
 import { LoadingSpinner } from "./ui/loading-spinner"
 import { LoadingOverlay } from "./ui/loading-overlay"
 import type { ApplicationEvent, ApplicationEventStatus, ApplicationLink } from "@/lib/mock-data"
@@ -234,6 +234,7 @@ export function AddEventBottomSheet({
   const [isDragging, setIsDragging] = useState(false)
   const [pendingLinks, setPendingLinks] = useState<ApplicationLink[]>([])
   const [isToroOpen, setIsToroOpen] = useState(false)
+  const [editingToroEntry, setEditingToroEntry] = useState<any>(null)
   const [memoEntries, setMemoEntries] = useState<any[]>([])
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -516,21 +517,42 @@ export function AddEventBottomSheet({
             {/* Note - Only show on edit and use Toro */}
             {mode === "edit" && existingEvent && (
               <div>
-                <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">イベントのメモ</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-[#1A1A1A]">イベントのメモ</label>
+                  {memoEntries.length < 3 && (
+                    <button
+                      onClick={() => {
+                        setEditingToroEntry(null)
+                        setIsToroOpen(true)
+                      }}
+                      className="text-xs font-medium text-[#2F80ED] hover:underline flex items-center gap-1"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      メモを追加
+                    </button>
+                  )}
+                </div>
                 <div 
-                  className="rounded-[14px] bg-[#F5F6F8] p-4 group relative cursor-pointer hover:bg-[#F0F1F4] transition-all min-h-[60px]"
-                  onClick={() => setIsToroOpen(true)}
+                  className="rounded-[14px] bg-[#F5F6F8] p-4 relative transition-all min-h-[60px]"
                 >
-                  <div className="absolute top-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-black/5">
-                    <span className="text-xs font-medium text-[#2F80ED]">
-                      💭Toroする
-                    </span>
-                  </div>
                   {memoEntries.length > 0 ? (
                     <div className="space-y-4">
                       {memoEntries.map((entry, idx) => (
-                        <div key={entry.id} className={`${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
-                          <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap">
+                        <div key={entry.id} className={`group/entry relative ${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
+                          <div className={`absolute right-0 opacity-0 group-hover/entry:opacity-100 transition-opacity ${idx !== 0 ? 'top-4' : 'top-0'}`}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEditingToroEntry(entry)
+                                setIsToroOpen(true)
+                              }}
+                              className="p-1 px-1.5 rounded-md bg-white hover:bg-white text-[#6B7280] hover:text-[#2F80ED] shadow-sm border border-black/5"
+                              title="編集"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-8">
                             {entry.content}
                           </p>
                           <p className="text-[10px] text-[#A1A1AA] mt-1">
@@ -540,6 +562,16 @@ export function AddEventBottomSheet({
                               hour: '2-digit', 
                               minute: '2-digit' 
                             })}
+                            {new Date(entry.updated_at).getTime() - new Date(entry.created_at).getTime() > 10000 && (
+                              <span className="ml-2">
+                                (更新: {new Date(entry.updated_at).toLocaleString('ja-JP', { 
+                                  month: 'numeric', 
+                                  day: 'numeric', 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })})
+                              </span>
+                            )}
                           </p>
                         </div>
                       ))}
@@ -622,7 +654,10 @@ export function AddEventBottomSheet({
       
       <LoadingOverlay isVisible={isSaving} className="z-[100]" />
 
-      <Sheet open={isToroOpen} onOpenChange={setIsToroOpen}>
+      <Sheet open={isToroOpen} onOpenChange={(open) => {
+        setIsToroOpen(open)
+        if (!open) setEditingToroEntry(null)
+      }}>
         <SheetContent side="bottom" className="h-[80vh] rounded-t-[20px] p-0 max-w-[640px] mx-auto inset-x-0 z-[110]">
           <SheetHeader className="p-6 pb-2">
             <SheetTitle className="text-lg font-light tracking-wide text-black/70"></SheetTitle>
@@ -636,8 +671,11 @@ export function AddEventBottomSheet({
                 eventId: existingEvent?.id,
                 eventTitle: title || eventType
               }}
+              entryId={editingToroEntry?.id}
+              defaultValue={editingToroEntry?.content || ''}
               onSaved={async () => {
                 setIsToroOpen(false)
+                setEditingToroEntry(null)
                 if (existingEvent) {
                   const entries = await getEventToroEntries(existingEvent.id)
                   setMemoEntries(entries)
