@@ -556,29 +556,16 @@ export function ApplicationDetailModal({
                               .slice(0, 3) // Latest 3 for the event
                               .map((entry, idx) => (
                                 <div key={entry.id} className="bg-[#F5F6F8]/50 p-2 rounded-lg group relative">
-                                  <div className="absolute top-2 right-4 z-20 flex md:hidden group-hover:flex transition-all">
+                                  <div className="absolute top-2 right-4 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
                                     <button 
                                       onClick={() => {
                                         setEditingToroEntry(entry)
                                         setIsToroOpen(true)
                                       }}
-                                      className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 active:scale-95 transition-all"
+                                      className="p-1.5 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 active:scale-95 transition-all"
                                       title="編集"
                                     >
-                                      <Edit className="h-5 w-5" strokeWidth={2.5} />
-                                    </button>
-                                  </div>
-                                  {/* desktop only hover icon */}
-                                  <div className="absolute top-2 right-4 z-20 hidden md:group-hover:flex transition-all">
-                                    <button 
-                                      onClick={() => {
-                                        setEditingToroEntry(entry)
-                                        setIsToroOpen(true)
-                                      }}
-                                      className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 transition-all"
-                                      title="編集"
-                                    >
-                                      <Edit className="h-4 w-4" strokeWidth={2} />
+                                      <Edit className="h-4 w-4" strokeWidth={2.5} />
                                     </button>
                                   </div>
                                   <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-12">
@@ -666,31 +653,17 @@ export function ApplicationDetailModal({
                           .slice(0, 3)
                           .map((entry, idx) => (
                           <div key={entry.id} className={`group relative ${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
-                            <div className={`absolute right-4 z-20 flex md:hidden group-hover:flex transition-all ${idx !== 0 ? 'top-4' : 'top-0'}`}>
+                            <div className={`absolute right-4 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all ${idx !== 0 ? 'top-4' : 'top-0'}`}>
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setEditingToroEntry(entry)
                                   setIsToroOpen(true)
                                 }}
-                                className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 active:scale-95 transition-all"
+                                className="p-1.5 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 active:scale-95 transition-all"
                                 title="編集"
                               >
-                                <Edit className="h-5 w-5" strokeWidth={2.5} />
-                              </button>
-                            </div>
-                            {/* desktop only hover icon */}
-                            <div className={`absolute right-4 z-20 hidden md:group-hover:flex transition-all ${idx !== 0 ? 'top-4' : 'top-0'}`}>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setEditingToroEntry(entry)
-                                  setIsToroOpen(true)
-                                }}
-                                className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 transition-all"
-                                title="編集"
-                              >
-                                <Edit className="h-4 w-4" strokeWidth={2} />
+                                <Edit className="h-4 w-4" strokeWidth={2.5} />
                               </button>
                             </div>
                             <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-12">
