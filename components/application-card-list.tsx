@@ -31,6 +31,7 @@ interface ApplicationCardListProps {
   onSortModeChange: (mode: SortMode) => void
   onSortDirectionToggle: () => void
   onApplicationClick: (applicationId: string) => void
+  onAddClick: () => void
   applications: Application[] // Added applications prop
 }
 
@@ -41,20 +42,29 @@ export function ApplicationCardList({
   onSortModeChange,
   onSortDirectionToggle,
   onApplicationClick,
+  onAddClick,
   applications,
 }: ApplicationCardListProps) {
   const sortedApplications = sortApplications(applications, sortMode, sortDirection)
 
   return (
     <div className="md:hidden">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-[#1A1A1A]">進行中の応募 {sortedApplications.length}件</h2>
-        <SortControls
-          sortMode={sortMode}
-          sortDirection={sortDirection}
-          onSortModeChange={onSortModeChange}
-          onSortDirectionToggle={onSortDirectionToggle}
-        />
+      <div className="mb-4 flex items-end justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">進行中の応募 {sortedApplications.length}件</h2>
+          <SortControls
+            sortMode={sortMode}
+            sortDirection={sortDirection}
+            onSortModeChange={onSortModeChange}
+            onSortDirectionToggle={onSortDirectionToggle}
+          />
+        </div>
+        <button
+          onClick={onAddClick}
+          className="flex items-center gap-1 text-sm font-medium text-[#2F80ED] hover:text-blue-700 transition-colors pb-1"
+        >
+          <span className="text-lg">+</span> 応募を追加
+        </button>
       </div>
       <AnimatePresence mode="popLayout">
         <div className="space-y-3">
@@ -121,13 +131,7 @@ export function ApplicationCardList({
                   <span className="text-xs text-[#6B7280]" suppressHydrationWarning>{getDisplayEventLabel(app.events, app.stage)}</span>
                 </div>
 
-                <div className="text-sm text-[#333]">
-                  <span className="text-[#555]">予定：</span>
-                  {formatDateDisplay(app.scheduledDate)}
-                  {app.startTime && app.endTime && (
-                    <span className="text-[#6B7280] ml-1">{formatTimeRange(app.startTime, app.endTime)}</span>
-                  )}
-                </div>
+
 
                 {/* Memo */}
                 {app.memo && app.memo !== "ー" && (

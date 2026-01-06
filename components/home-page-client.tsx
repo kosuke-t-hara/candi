@@ -226,6 +226,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
             onSortModeChange={handleSortModeChange}
             onSortDirectionToggle={handleSortDirectionToggle}
             onApplicationClick={handleApplicationClick}
+            onAddClick={() => setIsSheetOpen(true)}
             applications={ongoingApplications}
           />
           <ApplicationCardList
@@ -235,6 +236,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
             onSortModeChange={handleSortModeChange}
             onSortDirectionToggle={handleSortDirectionToggle}
             onApplicationClick={handleApplicationClick}
+            onAddClick={() => setIsSheetOpen(true)}
             applications={ongoingApplications}
           />
         </div>

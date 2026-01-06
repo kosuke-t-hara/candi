@@ -30,6 +30,7 @@ interface ApplicationTableProps {
   onSortModeChange: (mode: SortMode) => void
   onSortDirectionToggle: () => void
   onApplicationClick: (applicationId: string) => void
+  onAddClick: () => void
   applications: Application[] // Added applications prop
 }
 
@@ -40,20 +41,29 @@ export function ApplicationTable({
   onSortModeChange,
   onSortDirectionToggle,
   onApplicationClick,
+  onAddClick,
   applications,
 }: ApplicationTableProps) {
   const sortedApplications = sortApplications(applications, sortMode, sortDirection)
 
   return (
     <div className="hidden md:block">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-[#1A1A1A]">進行中の応募 {sortedApplications.length}件</h2>
-        <SortControls
-          sortMode={sortMode}
-          sortDirection={sortDirection}
-          onSortModeChange={onSortModeChange}
-          onSortDirectionToggle={onSortDirectionToggle}
-        />
+      <div className="mb-4 flex items-end justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">進行中の応募 {sortedApplications.length}件</h2>
+          <SortControls
+            sortMode={sortMode}
+            sortDirection={sortDirection}
+            onSortModeChange={onSortModeChange}
+            onSortDirectionToggle={onSortDirectionToggle}
+          />
+        </div>
+        <button
+          onClick={onAddClick}
+          className="flex items-center gap-1 text-sm font-medium text-[#2F80ED] hover:text-blue-700 transition-colors pb-1"
+        >
+          <span className="text-lg">+</span> 応募を追加
+        </button>
       </div>
       <div className="overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white shadow-sm">
         <table className="w-full">

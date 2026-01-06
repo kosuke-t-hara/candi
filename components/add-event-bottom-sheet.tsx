@@ -236,6 +236,7 @@ export function AddEventBottomSheet({
   const [isToroOpen, setIsToroOpen] = useState(false)
   const [editingToroEntry, setEditingToroEntry] = useState<any>(null)
   const [memoEntries, setMemoEntries] = useState<any[]>([])
+  const [localLinks, setLocalLinks] = useState<ApplicationLink[]>([])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0]
@@ -283,6 +284,7 @@ export function AddEventBottomSheet({
         setNote(existingEvent.note || "")
         setEndTimeManuallySet(true)
         setPendingLinks([])
+        setLocalLinks(existingEvent.links || [])
 
         const fetchMemos = async () => {
           const entries = await getEventToroEntries(existingEvent.id)
@@ -296,6 +298,7 @@ export function AddEventBottomSheet({
         setEndTime(calculatedEnd)
         setEndTimeManuallySet(false)
         setPendingLinks([])
+        setLocalLinks([])
       }
     }
   }, [isOpen, mode, existingEvent])
@@ -317,6 +320,7 @@ export function AddEventBottomSheet({
       setTouchOffset(0)
       setIsDragging(false)
       setPendingLinks([])
+      setLocalLinks([])
     }, 250)
   }
 
@@ -338,7 +342,7 @@ export function AddEventBottomSheet({
         endTime: effectiveEndTime,
         title: title || undefined,
         note,
-        links: pendingLinks,
+        links: mode === "edit" ? localLinks : pendingLinks,
       }
       await onSave(newEvent)
       handleClose()
@@ -538,21 +542,35 @@ export function AddEventBottomSheet({
                   {memoEntries.length > 0 ? (
                     <div className="space-y-4">
                       {memoEntries.map((entry, idx) => (
-                        <div key={entry.id} className={`group/entry relative ${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
-                          <div className={`absolute right-0 opacity-0 group-hover/entry:opacity-100 transition-opacity ${idx !== 0 ? 'top-4' : 'top-0'}`}>
+                        <div key={entry.id} className={`group relative ${idx !== 0 ? 'border-t border-black/5 pt-4' : ''}`}>
+                          <div className={`absolute right-4 z-20 flex md:hidden group-hover:flex transition-all ${idx !== 0 ? 'top-4' : 'top-0'}`}>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setEditingToroEntry(entry)
                                 setIsToroOpen(true)
                               }}
-                              className="p-1 px-1.5 rounded-md bg-white hover:bg-white text-[#6B7280] hover:text-[#2F80ED] shadow-sm border border-black/5"
+                              className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 active:scale-95 transition-all"
                               title="編集"
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <Edit className="h-5 w-5" strokeWidth={2.5} />
                             </button>
                           </div>
-                          <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-8">
+                          {/* desktop only hover icon */}
+                          <div className={`absolute right-4 z-20 hidden md:group-hover:flex transition-all ${idx !== 0 ? 'top-4' : 'top-0'}`}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEditingToroEntry(entry)
+                                setIsToroOpen(true)
+                              }}
+                              className="p-2 rounded-lg bg-white text-[#2F80ED] shadow-md border border-blue-100 hover:bg-blue-50 transition-all"
+                              title="編集"
+                            >
+                              <Edit className="h-4 w-4" strokeWidth={2} />
+                            </button>
+                          </div>
+                          <p className="text-sm text-[#333] leading-relaxed whitespace-pre-wrap pr-12">
                             {entry.content}
                           </p>
                           <p className="text-[10px] text-[#A1A1AA] mt-1">
@@ -586,10 +604,18 @@ export function AddEventBottomSheet({
             {/* Links */}
             <div className="pt-2 border-t border-[#E5E7EB]">
               <LinkSection 
-                links={mode === "edit" && existingEvent ? (existingEvent.links || []) : pendingLinks}
+                links={localLinks}
                 onAddLink={async (url, label) => {
                   if (mode === "edit" && existingEvent) {
-                    await addEventLink(existingEvent.id, url, label)
+                    const newLink = await addEventLink(existingEvent.id, url, label)
+                    // newLink is returned from addEventLink server action
+                    if (newLink) {
+                      setLocalLinks(prev => [...prev, { 
+                        id: newLink.id, 
+                        url: newLink.url, 
+                        label: (newLink as any).label || null 
+                      }])
+                    }
                   } else {
                     const newLink: ApplicationLink = { 
                       id: crypto.randomUUID(), 
@@ -597,13 +623,16 @@ export function AddEventBottomSheet({
                       label: label || null 
                     }
                     setPendingLinks(prev => [...prev, newLink])
+                    setLocalLinks(prev => [...prev, newLink])
                   }
                 }}
                 onDeleteLink={async (id) => {
                   if (mode === "edit") {
                     await deleteEventLink(id)
+                    setLocalLinks(prev => prev.filter(l => l.id !== id))
                   } else {
                     setPendingLinks(prev => prev.filter(l => l.id !== id))
+                    setLocalLinks(prev => prev.filter(l => l.id !== id))
                   }
                 }}
                 title="イベントのリンク"

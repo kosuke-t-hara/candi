@@ -55,13 +55,13 @@ export async function addEventLink(eventId: string, url: string, label?: string)
 
   const sort_order = (count || 0) + 1
 
-  const { error } = await (await supabase as any).from('application_event_links').insert({
+  const { data, error } = await (await supabase as any).from('application_event_links').insert({
     user_id: user.id,
     application_event_id: eventId,
     url,
     label: label || null,
     sort_order
-  })
+  }).select().single()
 
   if (error) {
     if (error.message.includes('Maximum 5 links')) {
@@ -71,6 +71,7 @@ export async function addEventLink(eventId: string, url: string, label?: string)
   }
 
   revalidatePath('/')
+  return data
 }
 
 export async function deleteEventLink(linkId: string) {
