@@ -81,9 +81,14 @@ interface HomePageClientProps {
   initialGrowthLogs: GrowthLog[]
   userProfile: Database['public']['Tables']['profiles']['Row'] | null
   latestToroEntry: ToroEntry | null
+  jobChangeEntries: {
+    priority: ToroEntry | null
+    reason: ToroEntry | null
+    avoid: ToroEntry | null
+  }
 }
 
-export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile, latestToroEntry }: HomePageClientProps) {
+export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile, latestToroEntry, jobChangeEntries }: HomePageClientProps) {
   const [isPending, startTransition] = useTransition()
   const router = useRouter() // Add router
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -237,6 +242,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
         <JobChangeDetails 
           profile={userProfile}
           isMasked={isMasked}
+          entries={jobChangeEntries}
         />
         
         {/* Latest Memo ("Hitokoto") Section */}

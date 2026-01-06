@@ -205,3 +205,32 @@ export async function getLatestToroEntry() {
 
   return data
 }
+
+export async function getLatestToroEntryByContext(context: any) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return null
+  }
+
+  const { data, error } = await (supabase as any)
+    .from('toro_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .contains('context', context)
+    .is('archived_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) {
+    if (error.code !== 'PGRST116') {
+      console.error('Error fetching latest toro entry by context:', error)
+    }
+    return null
+  }
+
+  return data
+}
