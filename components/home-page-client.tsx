@@ -22,6 +22,7 @@ import {
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import { addEventLink } from "@/app/actions/links"
 import { SortControls } from "@/components/sort-controls"
+import { JobChangeDetails } from "@/components/job-change-details"
 import { type SortMode, type SortDirection } from "@/lib/sort-utils"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
@@ -231,6 +232,11 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           ongoingCount={ongoingCount}
           weeklyCount={weeklyEventCount}
           onOngoingClick={handleScrollToApplications}
+        />
+        
+        <JobChangeDetails 
+          profile={userProfile}
+          isMasked={isMasked}
         />
         
         {/* Latest Memo ("Hitokoto") Section */}

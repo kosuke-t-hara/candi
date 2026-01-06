@@ -17,6 +17,9 @@ export interface Database {
           desired_annual_income_min: number | null
           desired_annual_income_max: number | null
           bio: string | null
+          job_change_priority: string | null
+          job_change_reason: string | null
+          job_change_avoid: string | null
           created_at: string
           updated_at: string
         }
@@ -27,6 +30,9 @@ export interface Database {
           desired_annual_income_min?: number | null
           desired_annual_income_max?: number | null
           bio?: string | null
+          job_change_priority?: string | null
+          job_change_reason?: string | null
+          job_change_avoid?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -37,6 +43,9 @@ export interface Database {
           desired_annual_income_min?: number | null
           desired_annual_income_max?: number | null
           bio?: string | null
+          job_change_priority?: string | null
+          job_change_reason?: string | null
+          job_change_avoid?: string | null
           created_at?: string
           updated_at?: string
         }
