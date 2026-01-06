@@ -65,7 +65,7 @@ export function Header() {
                   </Link>
                 </div>
 
-                <div className="p-4 mt-auto border-t border-white/5">
+                <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-auto border-t border-white/5">
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/50 hover:bg-white/5 hover:text-white/80 transition-all font-medium group/logout"
