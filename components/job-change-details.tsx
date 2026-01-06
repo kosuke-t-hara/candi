@@ -154,7 +154,33 @@ export function JobChangeDetails({ profile, isMasked }: JobChangeDetailsProps) {
           />
         </button>
 
-        {/* Collapsible content */}
+        {/* Collapsed state - "思考の痕跡" */}
+        {!isExpanded && (
+          <button
+            onClick={toggleExpanded}
+            className="w-full px-6 pb-4 md:px-10 md:pb-5 text-left hover:bg-[#F9FAFB] transition-colors"
+          >
+            <div className="space-y-1.5">
+              <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                {profile?.job_change_priority 
+                  ? "いちばん大事なポイント：記入あり" 
+                  : "いちばん大事なポイント：まだ言葉になっていません"}
+              </p>
+              <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                {profile?.job_change_reason 
+                  ? "転職理由：記入あり" 
+                  : "転職理由：あとから書けます"}
+              </p>
+              <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                {profile?.job_change_avoid 
+                  ? "避けたい条件：記入あり" 
+                  : "避けたい条件：考え中"}
+              </p>
+            </div>
+          </button>
+        )}
+
+        {/* Expanded state - Full content */}
         <div 
           className={`transition-all duration-300 ease-in-out ${
             isExpanded 

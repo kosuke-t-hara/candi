@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/sheet"
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import { addEventLink } from "@/app/actions/links"
-import { SortControls } from "@/components/sort-controls"
 import { JobChangeDetails } from "@/components/job-change-details"
+import { LatestNote } from "@/components/latest-note"
 import { type SortMode, type SortDirection } from "@/lib/sort-utils"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
@@ -241,30 +241,10 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
         
         {/* Latest Memo ("Hitokoto") Section */}
         {latestToroEntry && (
-          <div className="mt-8 md:mt-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
-            <div className="relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] px-6 py-6 md:px-10 md:py-8 shadow-sm group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-[#2F80ED] opacity-30" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-bold tracking-widest text-[#2F80ED] uppercase">Latest Note</span>
-                  <div className="h-[1px] flex-1 bg-[#2F80ED] opacity-10" />
-                </div>
-                <p className="text-lg md:text-xl font-light text-[#1F2937] leading-relaxed italic whitespace-pre-wrap">
-                  {latestToroEntry.content}
-                </p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-xs text-[#9CA3AF] font-medium">
-                    {new Date(latestToroEntry.created_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
-                  </span>
-                  <div className="flex gap-1.5 items-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-20" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-40" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-60" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <LatestNote 
+            content={latestToroEntry.content}
+            createdAt={latestToroEntry.created_at}
+          />
         )}
 
         <WeeklySchedule
