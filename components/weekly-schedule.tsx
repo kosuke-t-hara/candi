@@ -187,7 +187,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-10 md:mt-14">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-[#1A1A1A]">今週の予定</h2>
@@ -249,7 +249,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
         </div>
         */}
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-7 md:overflow-x-visible md:pb-0">
+      <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-7 md:overflow-x-visible md:pb-0 md:gap-4">
         {weekDays.map((day) => {
           const dateISO = formatDateISO(day)
           const dayEvents = filteredEvents
@@ -267,14 +267,14 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
           return (
             <div
               key={dateISO}
-              className={`min-w-[140px] flex-shrink-0 rounded-[14px] border ${
+              className={`min-w-[160px] flex-shrink-0 rounded-[16px] border ${
                 isToday ? "border-[#3B82F6] ring-1 ring-[#3B82F6]" : "border-[#E5E7EB]"
-              } bg-white px-3 py-3 shadow-sm md:min-w-0 md:flex-shrink flex flex-col ${
-                isExpanded ? "min-h-[240px]" : "h-[240px]"
+              } bg-white px-4 py-5 shadow-sm md:min-w-0 md:flex-shrink flex flex-col ${
+                isExpanded ? "min-h-[280px]" : "h-[280px]"
               }`}
             >
-              <div className="mb-2 border-b border-[#E5E7EB] pb-2 flex items-center justify-between flex-shrink-0">
-                <span className={`text-xs font-medium ${isToday ? "text-[#3B82F6]" : "text-[#555]"}`}>
+              <div className="mb-3 border-b border-[#E5E7EB] pb-3 flex items-center justify-between flex-shrink-0">
+                <span className={`text-[13px] font-semibold ${isToday ? "text-[#3B82F6]" : "text-[#1F2937]"}`}>
                   {formatDate(day)}
                 </span>
                 {eventCount > 0 && (
@@ -285,18 +285,18 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
               </div>
               <div className="flex-1 overflow-hidden">
                 {dayEvents.length === 0 ? (
-                  <p className="py-1 text-xs text-[#A1A1AA]">予定なし</p>
+                  <p className="py-2 text-xs text-[#A1A1AA]">予定なし</p>
                 ) : (
-                  <div className="space-y-2 h-full">
+                  <div className="space-y-3 h-full">
                     {displayEvents.map((event, idx) => {
                       const isGrowth = event.sourceType === "growth"
                       const dotColor = isGrowth ? "#22C55E" : getPhaseColor(event.eventType)
 
                       return (
-                        <div
-                          key={event.id}
-                          className={idx < displayEvents.length - 1 ? "border-b border-[#E5E7EB] pb-2" : ""}
-                        >
+                          <div
+                            key={event.id}
+                            className={idx < displayEvents.length - 1 ? "border-b border-[#E5E7EB] pb-3" : ""}
+                          >
                           <button
                             onClick={() => handleEventClick(event)}
                             className={`w-full text-left transition-all duration-150 rounded-lg px-1.5 py-1 -mx-1.5 -my-1 ${
@@ -320,12 +320,12 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
                                 {isGrowth ? event.title : getDisplayCompanyName(event.title, isMasked)}
                               </span>
                             </div>
-                            <p className="ml-6 text-[10px] text-[#6B7280] truncate mt-0.5">{event.subtitle}</p>
-                            <p className="ml-6 text-[10px] truncate" style={{ color: dotColor }}>
+                            <p className="ml-6 text-[11px] text-[#6B7280] truncate mt-1">{event.subtitle}</p>
+                            <p className="ml-6 text-[11px] truncate mt-0.5" style={{ color: dotColor }}>
                               {event.eventType}
                             </p>
                             {event.startTime && event.endTime && (
-                              <p className="ml-6 text-[10px] text-[#9CA3AF] leading-tight mt-0.5">
+                              <p className="ml-6 text-[10px] text-[#9CA3AF] leading-relaxed mt-1">
                                 {formatTimeRange(event.startTime, event.endTime)}
                               </p>
                             )}
@@ -350,7 +350,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
           )
         })}
       </div>
-      <div className="mt-3 text-center text-xs text-[#6B7280]">
+       <div className="mt-4 text-center text-xs text-[#6B7280]">
         この期間の転職活動：{jobEventsCount}件
       </div>
     </div>

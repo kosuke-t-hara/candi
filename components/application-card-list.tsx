@@ -80,14 +80,14 @@ export function ApplicationCardList({
               whileTap={{ scale: 0.98 }}
               data-app-id={app.id}
               onClick={() => onApplicationClick(app.id)}
-              className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3 shadow-sm cursor-pointer transition-shadow"
+              className="rounded-[16px] border border-[#E5E7EB] bg-white px-5 py-5 shadow-sm cursor-pointer transition-shadow"
             >
               <div className="space-y-2">
                 <div>
                   <h3 className="text-sm font-semibold text-[#1A1A1A]">
                     {getDisplayCompanyName(app.company, isMasked)}
                   </h3>
-                  <p className="text-xs text-[#6B7280]">{app.position}</p>
+                  <p className="text-xs text-[#6B7280] mt-1">{app.position}</p>
                 </div>
 
                 {/* Pills row */}
@@ -135,7 +135,7 @@ export function ApplicationCardList({
 
                 {/* Memo */}
                 {app.memo && app.memo !== "ー" && (
-                  <div className="text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-2 mt-2 line-clamp-2">
+                  <div className="text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-3 mt-3 line-clamp-2 leading-relaxed">
                     {getDisplayMemo(app.memo, isMasked)}
                   </div>
                 )}

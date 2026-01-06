@@ -209,7 +209,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
   return (
     <div className="min-h-screen bg-[#F5F6F8] w-full pt-14">
       <Header />
-      <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-6">
+      <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-8 md:py-12">
         <CandidateSummary 
           isMasked={isMasked} 
           onToggleMask={() => setIsMasked(!isMasked)} 
@@ -226,7 +226,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           applications={ongoingApplications}
           growthLogs={initialGrowthLogs}
         />
-        <div id="ongoing-applications" className="mt-6">
+        <div id="ongoing-applications" className="mt-12 md:mt-16">
           <ApplicationTable
             isMasked={isMasked}
             sortMode={sortMode}
