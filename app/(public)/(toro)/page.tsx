@@ -20,7 +20,7 @@ export default function ToroHome() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12 animate-in fade-in duration-1000">
       <div className="space-y-4">
         <h1 className="text-4xl md:text-5xl font-extralight tracking-widest text-black/80">
-          Toro Notes
+          Toro
         </h1>
         <p className="text-sm md:text-base text-black/50 font-light tracking-wide italic">
           書かなくてもいい。

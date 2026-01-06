@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant dark (&:is(.dark *));
+
 /* Updated color palette to match new design specifications */
 :root {
   --background: #f5f6f8;
@@ -122,31 +124,13 @@
     @apply border-border outline-ring/50;
   }
   
-  html {
-    /* 常にスクロールバーを表示して幅の変化を防ぐ */
-    overflow-y: scroll !important;
-  }
-  
   body {
     @apply bg-background text-foreground;
     min-height: 100vh;
   }
 }
 
-/* Baseレイヤーの外で強力に上書き */
-body {
-    overflow: visible !important;
-    padding-right: 0px !important;
-    margin-right: 0px !important;
-}
 
-/* HeaderおよびRadixが干渉する可能性のある全要素のパディングをリセット */
-header,
-[data-radix-collection-item],
-[data-radix-scroll-lock-ignore] {
-    padding-right: 0px !important;
-    margin-right: 0px !important;
-}
 
 /* Adding highlight flash animation for event-to-application linking */
 @keyframes highlight-flash {

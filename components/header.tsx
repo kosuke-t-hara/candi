@@ -23,14 +23,14 @@ export function Header() {
   }
 
   return (
-    <header className="bg-[#222222]/95 backdrop-blur-md fixed left-0 top-0 z-40 border-b border-white/5 w-full">
+    <header className="bg-[#222222]/95 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 w-full">
       <div className="mx-auto w-full px-2 h-14 flex items-center">
         <div className="relative flex items-center justify-between w-full h-full">
           {/* Left: Menu Trigger */}
           <div className="flex items-center">
             <Sheet modal={false}>
               <SheetTrigger asChild>
-                <button className="p-2 -ml-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors bg-transparent border-none cursor-pointer flex items-center justify-center">
+                <button className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors bg-transparent border-none cursor-pointer flex items-center justify-center">
                   <Menu className="h-6 w-6" />
                 </button>
               </SheetTrigger>

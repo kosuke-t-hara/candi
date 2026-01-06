@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Toro Notes",
-  description: "書かなくても、ここにいていいです。",
+  title: "Toro",
+  description: "書かなくてもいい。",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
