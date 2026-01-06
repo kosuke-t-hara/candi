@@ -289,7 +289,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
         <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-white rounded-t-[32px] p-0 border-none overflow-hidden max-w-3xl mx-auto">
           <div className="mx-auto w-full max-w-2xl h-full flex flex-col">
             <SheetHeader className="px-6 py-4 border-b border-black/5 flex-shrink-0">
-              <SheetTitle className="text-xl font-medium text-black/80">メモを残す</SheetTitle>
+              <SheetTitle className="text-xl font-medium text-black/80">今のひとこと</SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto p-6 pt-2">
               <ToroComposer 

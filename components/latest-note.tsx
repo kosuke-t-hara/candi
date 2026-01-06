@@ -18,7 +18,7 @@ export function LatestNote({ content, createdAt }: LatestNoteProps) {
         <div className="absolute top-0 left-0 w-1 h-full bg-[#2F80ED] opacity-30" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] font-bold tracking-widest text-[#2F80ED] uppercase">Latest Note</span>
+            <span className="text-[10px] font-bold tracking-widest text-[#2F80ED] uppercase">最新のひとこと</span>
             <div className="h-[1px] flex-1 bg-[#2F80ED] opacity-10" />
           </div>
           <p 

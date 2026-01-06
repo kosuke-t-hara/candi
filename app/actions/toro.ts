@@ -191,6 +191,7 @@ export async function getLatestToroEntry() {
     .from('toro_entries')
     .select('*')
     .eq('user_id', user.id)
+    .is('context', null)
     .is('archived_at', null)
     .order('created_at', { ascending: false })
     .limit(1)
