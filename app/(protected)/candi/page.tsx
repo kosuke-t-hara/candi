@@ -1,6 +1,7 @@
 import { getApplications } from "@/app/actions/applications"
 import { getGrowthLogs } from "@/app/actions/growth"
 import { getProfile } from "@/app/actions/profile"
+import { getLatestToroEntry } from "@/app/actions/toro"
 import { HomePageClient } from "@/components/home-page-client"
 import type { Application, GrowthLog, ApplicationEvent } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
@@ -90,10 +91,11 @@ function mapGrowthLogToUI(dbLog: Database['public']['Tables']['growth_logs']['Ro
 }
 
 export default async function Home() {
-  const [applicationsData, growthLogsData, profile] = await Promise.all([
+  const [applicationsData, growthLogsData, profile, latestToroEntry] = await Promise.all([
     getApplications(),
     getGrowthLogs(),
     getProfile(),
+    getLatestToroEntry(),
   ])
 
   // Cast the data to the expected type with events
@@ -106,6 +108,7 @@ export default async function Home() {
       initialApplications={applications}
       initialGrowthLogs={growthLogs}
       userProfile={profile}
+      latestToroEntry={latestToroEntry}
     />
   )
 

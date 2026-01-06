@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { CandidateSummary } from "@/components/candidate-summary"
 import { DailyQuestionCard } from "@/components/daily-question-card"
@@ -63,14 +64,27 @@ function mapKindToEventType(kind: string): string {
   return mapping[kind] || kind
 }
 
+// Define local type for ToroEntry since it's missing in generated types
+interface ToroEntry {
+  id: string
+  user_id: string
+  content: string
+  context: any
+  created_at: string
+  updated_at: string
+  archived_at: string | null
+}
+
 interface HomePageClientProps {
   initialApplications: Application[]
   initialGrowthLogs: GrowthLog[]
   userProfile: Database['public']['Tables']['profiles']['Row'] | null
+  latestToroEntry: ToroEntry | null
 }
 
-export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile }: HomePageClientProps) {
+export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile, latestToroEntry }: HomePageClientProps) {
   const [isPending, startTransition] = useTransition()
+  const router = useRouter() // Add router
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isToroSheetOpen, setIsToroSheetOpen] = useState(false)
   const [isMasked, setIsMasked] = useState(false)
@@ -218,8 +232,35 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           weeklyCount={weeklyEventCount}
           onOngoingClick={handleScrollToApplications}
         />
-        {/* <DailyQuestionCard /> */}
-        {/* <TodoSection isMasked={isMasked} /> */}
+        
+        {/* Latest Memo ("Hitokoto") Section */}
+        {latestToroEntry && (
+          <div className="mt-8 md:mt-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
+            <div className="relative overflow-hidden rounded-2xl bg-white border border-[#E5E7EB] px-6 py-6 md:px-10 md:py-8 shadow-sm group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#2F80ED] opacity-30" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[10px] font-bold tracking-widest text-[#2F80ED] uppercase">Latest Note</span>
+                  <div className="h-[1px] flex-1 bg-[#2F80ED] opacity-10" />
+                </div>
+                <p className="text-lg md:text-xl font-light text-[#1F2937] leading-relaxed italic whitespace-pre-wrap">
+                  {latestToroEntry.content}
+                </p>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-xs text-[#9CA3AF] font-medium">
+                    {new Date(latestToroEntry.created_at).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
+                  </span>
+                  <div className="flex gap-1.5 items-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-20" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-40" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#2F80ED] opacity-60" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <WeeklySchedule
           isMasked={isMasked}
           onEventClick={handleApplicationClick}
@@ -253,7 +294,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
       <NewOpportunityBottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
       
       <Sheet open={isToroSheetOpen} onOpenChange={setIsToroSheetOpen}>
-        <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-white rounded-t-[32px] p-0 border-none overflow-hidden">
+        <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-white rounded-t-[32px] p-0 border-none overflow-hidden max-w-3xl mx-auto">
           <div className="mx-auto w-full max-w-2xl h-full flex flex-col">
             <SheetHeader className="px-6 py-4 border-b border-black/5 flex-shrink-0">
               <SheetTitle className="text-xl font-medium text-black/80">メモを残す</SheetTitle>
@@ -261,7 +302,10 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
             <div className="flex-1 overflow-y-auto p-6 pt-2">
               <ToroComposer 
                 isAuthenticated={!!userProfile} 
-                onSaved={() => setIsToroSheetOpen(false)}
+                onSaved={() => {
+                  setIsToroSheetOpen(false)
+                  router.refresh()
+                }}
                 className="mt-0"
                 placeholder="今の気持ちを、そのままに。"
               />
