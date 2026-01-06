@@ -23,7 +23,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-[#1A1A1A]/95 backdrop-blur-md fixed left-0 top-0 z-40 border-b border-white/5 w-full">
+    <header className="bg-[#222222]/95 backdrop-blur-md fixed left-0 top-0 z-40 border-b border-white/5 w-full">
       <div className="mx-auto w-full px-2 h-14 flex items-center">
         <div className="relative flex items-center justify-between w-full h-full">
           {/* Left: Menu Trigger */}
@@ -34,7 +34,7 @@ export function Header() {
                   <Menu className="h-6 w-6" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="bg-[#1A1A1A] border-white/10 text-white p-0 flex flex-col w-[280px]">
+              <SheetContent side="left" className="bg-[#2A2A2A] border-white/10 text-white p-0 flex flex-col w-[280px]">
                 <SheetHeader className="p-6 border-b border-white/5">
                   <SheetTitle className="text-white flex items-center gap-2">
                     <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">

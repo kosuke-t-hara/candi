@@ -11,6 +11,13 @@ import { FloatingActionButton } from "@/components/floating-action-button"
 import { NewOpportunityBottomSheet } from "@/components/new-opportunity-bottom-sheet"
 import { WeeklySchedule } from "@/components/weekly-schedule"
 import { ApplicationDetailModal } from "@/components/application-detail-modal"
+import { ToroComposer } from "@/app/components/toro/ToroComposer"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import { addEventLink } from "@/app/actions/links"
 import { SortControls } from "@/components/sort-controls"
@@ -65,6 +72,7 @@ interface HomePageClientProps {
 export function HomePageClient({ initialApplications, initialGrowthLogs, userProfile }: HomePageClientProps) {
   const [isPending, startTransition] = useTransition()
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isToroSheetOpen, setIsToroSheetOpen] = useState(false)
   const [isMasked, setIsMasked] = useState(false)
   const [sortMode, setSortMode] = useState<SortMode>("nextEvent")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
@@ -241,8 +249,26 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           />
         </div>
       </main>
-      <FloatingActionButton onClick={() => setIsSheetOpen(true)} />
+      <FloatingActionButton onClick={() => setIsToroSheetOpen(true)} />
       <NewOpportunityBottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+      
+      <Sheet open={isToroSheetOpen} onOpenChange={setIsToroSheetOpen}>
+        <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-white rounded-t-[32px] p-0 border-none overflow-hidden">
+          <div className="mx-auto w-full max-w-2xl h-full flex flex-col">
+            <SheetHeader className="px-6 py-4 border-b border-black/5 flex-shrink-0">
+              <SheetTitle className="text-xl font-medium text-black/80">メモを残す</SheetTitle>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto p-6 pt-2">
+              <ToroComposer 
+                isAuthenticated={!!userProfile} 
+                onSaved={() => setIsToroSheetOpen(false)}
+                className="mt-0"
+                placeholder="今の気持ちを、そのままに。"
+              />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
       {selectedApplication && (
         <ApplicationDetailModal
           application={selectedApplication}
