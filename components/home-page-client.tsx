@@ -199,9 +199,9 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
   }, [selectedApplicationId])
 
   return (
-    <div className="min-h-screen bg-[#F5F6F8] overflow-x-hidden max-w-full">
+    <div className="min-h-screen bg-[#F5F6F8] w-full pt-14">
       <Header />
-      <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-6 overflow-x-hidden">
+      <main className="mx-auto w-full max-w-full md:max-w-5xl px-4 md:px-6 lg:px-8 py-6">
         <CandidateSummary 
           isMasked={isMasked} 
           onToggleMask={() => setIsMasked(!isMasked)} 
