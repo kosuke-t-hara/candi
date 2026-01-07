@@ -204,7 +204,7 @@ export function JobChangeDetails({ profile, isMasked, entries }: JobChangeDetail
       </div>
 
       <Sheet open={!!activeSheet} onOpenChange={(open) => !open && setActiveSheet(null)}>
-        <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-white rounded-t-[32px] p-0 border-none overflow-hidden max-w-3xl mx-auto">
+        <SheetContent side="bottom" className="h-[80vh] bg-white rounded-t-[20px] p-0 border-none overflow-hidden max-w-[640px] mx-auto inset-x-0">
           <div className="mx-auto w-full max-w-2xl h-full flex flex-col">
             <SheetHeader className="px-6 py-4 border-b border-black/5 flex-shrink-0">
               <SheetTitle className="text-xl font-medium text-black/80">{getSheetTitle()}</SheetTitle>
