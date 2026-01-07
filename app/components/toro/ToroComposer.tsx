@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createToroEntry, updateToroEntry } from '@/app/actions/toro'
+import { generateQuestion } from '@/app/actions/ai'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
 import { Mic, Sparkles } from 'lucide-react'
 import { useSpeechToTextJa } from '@/app/hooks/useSpeechToTextJa'
+import { toast } from 'sonner'
 import {
   Tooltip,
   TooltipContent,
@@ -102,13 +104,33 @@ export function ToroComposer({
   const handleGenerateQuestion = async () => {
     if (!content.trim() || isGenerating) return
     
+    // 3000文字制限
+    const textToProcess = content.trim().slice(0, 3000)
+    
     setIsGenerating(true)
     try {
-      // TODO: AI生成ロジックの実装
-      await new Promise(resolve => setTimeout(resolve, 2000)) // モック
-      console.log('AI問い生成を実行しました')
+      const question = await generateQuestion(textToProcess)
+      
+      const suffix = `\n\n> ${question}\n`
+      const newContent = content + suffix
+      
+      setContent(newContent)
+      onContentChange?.(newContent)
+      
+      // フォーカスとカーソル位置の制御
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const textarea = textareaRef.current
+          textarea.focus()
+          const length = newContent.length
+          textarea.setSelectionRange(length, length)
+          textarea.scrollTop = textarea.scrollHeight
+        }
+      }, 0)
+      
     } catch (error) {
       console.error('Failed to generate question:', error)
+      toast.error('問いを生成できませんでした。もう一度お試しください')
     } finally {
       setIsGenerating(false)
     }
