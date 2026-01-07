@@ -1,6 +1,54 @@
 import type { Database } from './types/database'
 import type { ApplicationEvent } from './mock-data'
 
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
+
+export function formatDateDisplay(isoDate: string): string {
+  if (!isoDate || isoDate === "undefined" || isoDate === "null") return "—"
+  const date = new Date(isoDate)
+  if (isNaN(date.getTime())) return "—"
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const weekday = WEEKDAYS[date.getDay()]
+  return `${month}/${day}（${weekday}）`
+}
+
+export function formatTimeRange(startTime: string, endTime: string): string {
+  if (startTime === '00:00' || !startTime) return ""
+  return `${startTime}〜${endTime}`
+}
+
+export function getNextEvent(events: ApplicationEvent[]) {
+  if (!events) return null
+  const now = new Date()
+  const futureEvents = events.filter((e) => {
+    const eventDate = new Date(`${e.date}T${e.startTime}`)
+    return eventDate > now
+  })
+
+  // First try to find confirmed events
+  const confirmedFuture = futureEvents.filter((e) => e.status === "confirmed")
+  if (confirmedFuture.length > 0) {
+    return confirmedFuture.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date)
+      if (dateCompare !== 0) return dateCompare
+      return a.startTime.localeCompare(b.startTime)
+    })[0]
+  }
+
+  // If no confirmed, try candidate events
+  const candidateFuture = futureEvents.filter((e) => e.status === "candidate")
+  if (candidateFuture.length > 0) {
+    return candidateFuture.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date)
+      if (dateCompare !== 0) return dateCompare
+      return a.startTime.localeCompare(b.startTime)
+    })[0]
+  }
+
+  return null
+}
+
 /**
  * Derives the selection phase (1-5) from the application stage
  * 

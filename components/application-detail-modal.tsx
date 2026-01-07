@@ -10,7 +10,7 @@ import type { Application, ApplicationEvent } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel, getDisplayMemo } from "@/lib/mask-utils"
 import { updateApplication } from "@/app/actions/applications"
 import { AddEventBottomSheet } from "./add-event-bottom-sheet"
-import { getStageLabel } from "@/lib/selection-phase-utils"
+import { getStageLabel, getNextEvent, formatDateDisplay, formatTimeRange } from "@/lib/selection-phase-utils"
 import { LinkSection } from "./link-section"
 import { addApplicationLink, deleteApplicationLink } from "@/app/actions/links"
 import { ToroComposer } from "@/app/components/toro/ToroComposer"
@@ -18,51 +18,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Mic } from "lucide-react"
 
 import { getApplicationToroEntries } from "@/app/actions/toro"
-
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
-
-function formatDateDisplay(isoDate: string): string {
-  const date = new Date(isoDate)
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const weekday = WEEKDAYS[date.getDay()]
-  return `${month}/${day}（${weekday}）`
-}
-
-function formatTimeRange(startTime: string, endTime: string): string {
-  if (startTime === '00:00' || !startTime) return ""
-  return `${startTime}〜${endTime}`
-}
-
-function getNextEvent(events: ApplicationEvent[]) {
-  const now = new Date()
-  const futureEvents = events.filter((e) => {
-    const eventDate = new Date(`${e.date}T${e.startTime}`)
-    return eventDate > now
-  })
-
-  // First try to find confirmed events
-  const confirmedFuture = futureEvents.filter((e) => e.status === "confirmed")
-  if (confirmedFuture.length > 0) {
-    return confirmedFuture.sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date)
-      if (dateCompare !== 0) return dateCompare
-      return a.startTime.localeCompare(b.startTime)
-    })[0]
-  }
-
-  // If no confirmed, try candidate events
-  const candidateFuture = futureEvents.filter((e) => e.status === "candidate")
-  if (candidateFuture.length > 0) {
-    return candidateFuture.sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date)
-      if (dateCompare !== 0) return dateCompare
-      return a.startTime.localeCompare(b.startTime)
-    })[0]
-  }
-
-  return null
-}
 
 interface ApplicationDetailModalProps {
   application: Application

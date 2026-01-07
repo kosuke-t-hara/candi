@@ -6,23 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel, getDisplayMemo } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
-import { getStageLabel, getDisplayEventLabel, getDisplayStatus } from "@/lib/selection-phase-utils"
-
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
-
-function formatDateDisplay(isoDate: string): string {
-  if (!isoDate || isoDate === "undefined" || isoDate === "null") return "—"
-  const date = new Date(isoDate)
-  if (isNaN(date.getTime())) return "—"
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const weekday = WEEKDAYS[date.getDay()]
-  return `${month}/${day}（${weekday}）`
-}
-
-function formatTimeRange(startTime: string, endTime: string): string {
-  return `${startTime}〜${endTime}`
-}
+import { getStageLabel, getDisplayEventLabel, getDisplayStatus, getNextEvent, formatDateDisplay, formatTimeRange } from "@/lib/selection-phase-utils"
 
 interface ApplicationCardListProps {
   isMasked: boolean
@@ -131,15 +115,30 @@ export function ApplicationCardList({
                   <span className="text-xs text-[#6B7280]" suppressHydrationWarning>{getDisplayEventLabel(app.events, app.stage)}</span>
                 </div>
 
+                {/* Next Event */}
+                {(() => {
+                  const nextEvent = getNextEvent(app.events)
+                  if (!nextEvent) return null
+                  return (
+                    <div className="pt-2 border-t border-[#E5E7EB]">
+                      <div className="flex-1">
+                        <p className="text-[10px] text-[#6B7280] mb-0.5">
+                          次のイベント：
+                          {nextEvent.status === "candidate" && <span className="text-[#E6B400]">(調整中)</span>}
+                        </p>
+                        <p className="text-xs font-semibold text-[#1A1A1A]">
+                          {formatDateDisplay(nextEvent.date)}{" "}
+                          <span className="text-[#6B7280] font-normal">
+                            {formatTimeRange(nextEvent.startTime, nextEvent.endTime)}
+                          </span>
+                        </p>
+                        <p className="text-xs text-[#6B7280] line-clamp-1">{nextEvent.title || nextEvent.type}</p>
+                      </div>
+                    </div>
+                  )
+                })()}
 
-
-                {/* Memo */}
-                {app.memo && app.memo !== "ー" && (
-                  <div className="text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-3 mt-3 line-clamp-2 leading-relaxed">
-                    {getDisplayMemo(app.memo, isMasked)}
-                  </div>
-                )}
-
+                {/* Memo hidden in mobile view per request */}
               </div>
             </motion.div>
           ))}

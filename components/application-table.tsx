@@ -6,22 +6,7 @@ import { SelectionIndicator } from "./selection-indicator"
 import type { Application } from "@/lib/mock-data"
 import { getDisplayCompanyName, getDisplaySourceLabel, getSourceTypeLabel, getDisplayMemo } from "@/lib/mask-utils"
 import { sortApplications, type SortMode, type SortDirection } from "@/lib/sort-utils"
-import { getStageLabel, getDisplayEventLabel, getDisplayStatus } from "@/lib/selection-phase-utils"
-
-const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"]
-
-function formatDateDisplay(isoDate: string): string {
-  const date = new Date(isoDate)
-  if (!isoDate || isNaN(date.getTime())) return "—"
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const weekday = WEEKDAYS[date.getDay()]
-  return `${month}/${day}（${weekday}）`
-}
-
-function formatTimeRange(startTime: string, endTime: string): string {
-  return `${startTime}〜${endTime}`
-}
+import { getStageLabel, getDisplayEventLabel, getDisplayStatus, getNextEvent, formatDateDisplay, formatTimeRange } from "@/lib/selection-phase-utils"
 
 interface ApplicationTableProps {
   isMasked: boolean
@@ -71,6 +56,7 @@ export function ApplicationTable({
             <tr className="bg-[#1A1A1A] text-left text-sm text-white">
               <th className="px-4 py-3 font-medium min-w-[200px] w-1/4">企業</th>
               <th className="px-4 py-3 font-medium min-w-[120px]">紹介元</th>
+              <th className="px-4 py-3 font-medium min-w-[140px]">次のイベント</th>
               <th className="px-4 py-3 font-medium min-w-[80px]">状況</th>
               <th className="px-4 py-3 font-medium">メモ</th>
             </tr>
@@ -109,6 +95,25 @@ export function ApplicationTable({
                       </div>
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    {(() => {
+                      const nextEvent = getNextEvent(app.events)
+                      if (!nextEvent) return <span className="text-xs text-[#A1A1AA]">なし</span>
+                      return (
+                        <div className="space-y-1">
+                          <div className="text-xs font-semibold text-[#1A1A1A]">
+                            {formatDateDisplay(nextEvent.date)}
+                            <br />
+                            <span className="text-[#6B7280] font-normal">
+                              {formatTimeRange(nextEvent.startTime, nextEvent.endTime)}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-[#6B7280] line-clamp-1">{nextEvent.title || nextEvent.type}</div>
+                        </div>
+                      )
+                    })()}
+                  </td>
+
                   <td className="px-4 py-3">
                     {(() => {
                       const { label, color } = getDisplayStatus(app)
