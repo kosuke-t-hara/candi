@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation'
 import { createToroEntry, updateToroEntry } from '@/app/actions/toro'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
-import { Mic } from 'lucide-react'
+import { Mic, Sparkles } from 'lucide-react'
 import { useSpeechToTextJa } from '@/app/hooks/useSpeechToTextJa'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface ToroComposerProps {
   isAuthenticated: boolean
@@ -31,6 +37,7 @@ export function ToroComposer({
 }: ToroComposerProps) {
   const [content, setContent] = useState(defaultValue)
   const [isSaving, setIsSaving] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   
   const router = useRouter()
@@ -89,6 +96,21 @@ export function ToroComposer({
       stop()
     } else {
       start()
+    }
+  }
+
+  const handleGenerateQuestion = async () => {
+    if (!content.trim() || isGenerating) return
+    
+    setIsGenerating(true)
+    try {
+      // TODO: AI生成ロジックの実装
+      await new Promise(resolve => setTimeout(resolve, 2000)) // モック
+      console.log('AI問い生成を実行しました')
+    } catch (error) {
+      console.error('Failed to generate question:', error)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -169,30 +191,54 @@ export function ToroComposer({
               {error === 'not-allowed' ? 'マイクの使用が許可されていません' : '音声認識エラーが発生しました'}
             </span>
           )}
-          
-          <button
-            onClick={toggleRecording}
-            className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-500 ${
-              isListening 
-                ? 'text-black/60 bg-black/5' 
-                : 'text-black/20 hover:text-black/40 hover:bg-black/5'
-            }`}
-            title={isListening ? "停止" : "音声で入力を開始"}
-            type="button"
-          >
-            {isListening ? (
-              <>
-                <Mic className="w-5 h-5 text-red-400/60" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400/40 rounded-full animate-pulse" />
-              </>
-            ) : (
-              <Mic className="w-5 h-5" />
-            )}
-          </button>
+
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleGenerateQuestion}
+                    disabled={isGenerating || !content.trim()}
+                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/60 hover:text-black/80 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    type="button"
+                  >
+                    {isGenerating ? (
+                      <LoadingSpinner size={18} />
+                    ) : (
+                      <Sparkles className="w-5 h-5" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
+                  内容をもとに、考えを深める問いを生成します
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <button
+              onClick={toggleRecording}
+              className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-500 ${
+                isListening 
+                  ? 'text-black/60 bg-black/5' 
+                  : 'text-black/20 hover:text-black/40 hover:bg-black/5'
+              }`}
+              title={isListening ? "停止" : "音声で入力を開始"}
+              type="button"
+            >
+              {isListening ? (
+                <>
+                  <Mic className="w-5 h-5 text-red-400/60" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400/40 rounded-full animate-pulse" />
+                </>
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
+            </button>
+          </div>
 
           <button
             onClick={handleSave}
-            disabled={isSaving || (!entryId && !content.trim())}
+            disabled={isSaving || isGenerating || (!entryId && !content.trim())}
             className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px]"
             type="button"
           >
@@ -202,7 +248,6 @@ export function ToroComposer({
       </div>
 
       <div className="relative group min-h-[60vh]">
-        {/* ... existing textarea ... */}
         <textarea
           ref={textareaRef}
           value={content}
