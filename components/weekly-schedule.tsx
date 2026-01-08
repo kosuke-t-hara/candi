@@ -117,14 +117,26 @@ interface WeeklyScheduleProps {
 type EventFilter = "all" | "job" | "growth"
 
 const STORAGE_KEY = 'weekly-schedule-expanded'
+const VIEW_DURATION_KEY = 'weekly-schedule-view-duration'
 
 export function WeeklySchedule({ isMasked, onEventClick, applications, growthLogs }: WeeklyScheduleProps) {
   // <CHANGE> Use today as default baseDate
   const [baseDate, setBaseDate] = useState(new Date())
   const [isExpanded, setIsExpanded] = useState(true)
   
-  // <CHANGE> Calculate weekDays based on baseDate
-  const weekDays = getWeekDays(baseDate)
+  // <CHANGE> 4-day view support
+  const [viewDuration, setViewDuration] = useState<"week" | "4days">("week")
+
+  // <CHANGE> Calculate weekDays based on baseDate and viewDuration
+  // To keep "Today" or the current period stable, we generate N days from baseDate
+  // If we change mode, we just show N days starting from the current baseDate
+  const daysToShow = viewDuration === "week" ? 7 : 4
+  const weekDays: Date[] = []
+  for (let i = 0; i < daysToShow; i++) {
+    const d = new Date(baseDate)
+    d.setDate(baseDate.getDate() + i)
+    weekDays.push(d)
+  }
 
   const jobEvents = getEventsFromApplications(applications)
   const growthEvents = getEventsFromGrowthLogs(growthLogs)
@@ -133,11 +145,16 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
   const [eventFilter, setEventFilter] = useState<EventFilter>("all")
 
-  // Load expanded state from localStorage
+  // Load state from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored !== null) {
-      setIsExpanded(stored === 'true')
+    const storedExpanded = localStorage.getItem(STORAGE_KEY)
+    if (storedExpanded !== null) {
+      setIsExpanded(storedExpanded === 'true')
+    }
+
+    const storedDuration = localStorage.getItem(VIEW_DURATION_KEY)
+    if (storedDuration === "week" || storedDuration === "4days") {
+        setViewDuration(storedDuration)
     }
   }, [])
 
@@ -147,10 +164,15 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
     setIsExpanded(newState)
     localStorage.setItem(STORAGE_KEY, String(newState))
   }
+  
+  const handleSetViewDuration = (duration: "week" | "4days") => {
+      setViewDuration(duration)
+      localStorage.setItem(VIEW_DURATION_KEY, duration)
+  }
 
-  // <CHANGE> Filter events to show only those within the current week range
+  // <CHANGE> Filter events to show only those within the current visible range
   const weekStartISO = formatDateISO(weekDays[0])
-  const weekEndISO = formatDateISO(weekDays[6])
+  const weekEndISO = formatDateISO(weekDays[weekDays.length - 1])
 
   const filteredEvents = allEvents.filter((event) => {
     // Date range filter
@@ -184,10 +206,14 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   }
   
   // <CHANGE> Navigation handlers
+  // When in 4 days mode, do we jump by 4 days or 1 week? 
+  // Standard UX is jump by view duration usually. Let's do that.
+  const jumpDays = viewDuration === "week" ? 7 : 4
+
   const handlePrevWeek = () => {
     setBaseDate(prev => {
       const newDate = new Date(prev)
-      newDate.setDate(prev.getDate() - 7)
+      newDate.setDate(prev.getDate() - jumpDays)
       return newDate
     })
   }
@@ -195,7 +221,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   const handleNextWeek = () => {
     setBaseDate(prev => {
       const newDate = new Date(prev)
-      newDate.setDate(prev.getDate() + 7)
+      newDate.setDate(prev.getDate() + jumpDays)
       return newDate
     })
   }
@@ -211,28 +237,70 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
         <div className="px-6 py-4 md:px-10 md:py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-base md:text-lg font-semibold text-[#1F2937] tracking-wide">今週の予定</h2>
-            <div className="flex items-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] p-0.5">
-               <button 
-                 onClick={handlePrevWeek}
-                 className="p-1 hover:bg-white rounded text-[#6B7280] transition-colors"
-                 aria-label="前の週"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-               </button>
-               <button 
-                 onClick={handleToday}
-                 className="px-2 text-xs font-medium text-[#1A1A1A] hover:bg-white rounded py-1 transition-colors"
-               >
-                 今日
-               </button>
-               <button 
-                 onClick={handleNextWeek}
-                 className="p-1 hover:bg-white rounded text-[#6B7280] transition-colors"
-                 aria-label="次の週"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-               </button>
-            </div>
+            
+            {isExpanded && (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] p-0.5">
+                  <button 
+                    onClick={handlePrevWeek}
+                    className="p-1 hover:bg-white rounded text-[#6B7280] transition-colors"
+                    aria-label="前へ"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  </button>
+                  <button 
+                    onClick={handleToday}
+                    className="px-2 text-xs font-medium text-[#1A1A1A] hover:bg-white rounded py-1 transition-colors"
+                  >
+                    今日
+                  </button>
+                  <button 
+                    onClick={handleNextWeek}
+                    className="p-1 hover:bg-white rounded text-[#6B7280] transition-colors"
+                    aria-label="次へ"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </div>
+
+                {/* View Duration Toggle - Sliding animation */}
+                <div className="hidden md:flex relative items-center bg-[#F3F4F6] rounded-lg p-1 border border-[#E5E7EB] isolate">
+                    {/* Sliding background pill */}
+                    <div
+                        className={`absolute top-1 bottom-1 rounded-md bg-white shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                            viewDuration === "4days" 
+                            ? "left-1 right-[calc(50%+2px)]" // Left half
+                            : "left-[calc(50%+2px)] right-1" // Right half
+                        }`}
+                    />
+                    
+                    <button
+                        onClick={() => handleSetViewDuration("4days")}
+                        className={`relative z-10 w-[60px] py-1 text-xs font-medium rounded-md transition-colors duration-200 ${
+                            viewDuration === "4days" 
+                            ? "text-[#1F2937]" 
+                            : "text-[#6B7280] hover:text-[#374151]"
+                        }`}
+                    >
+                        4日
+                    </button>
+                    
+                    {/* Spacer to maintain gap visual if needed, though pure spacing in button width is safer for slider */}
+                    <div className="w-1" />
+
+                    <button
+                        onClick={() => handleSetViewDuration("week")}
+                        className={`relative z-10 w-[60px] py-1 text-xs font-medium rounded-md transition-colors duration-200 ${
+                            viewDuration === "week" 
+                            ? "text-[#1F2937]" 
+                            : "text-[#6B7280] hover:text-[#374151]"
+                        }`}
+                    >
+                        1週間
+                    </button>
+                </div>
+              </div>
+            )}
           </div>
           <button
             onClick={toggleExpanded}
@@ -256,7 +324,14 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
           }`}
         >
           <div className="px-6 pb-6 md:px-10 md:pb-8 border-t border-[#E5E7EB]">
-            <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-7 md:overflow-x-visible md:pb-0 md:gap-4 mt-6">
+            {/* 
+                Use dynamic grid columns
+                md:grid-cols-7 for week
+                md:grid-cols-4 for 4days
+             */}
+            <div className={`flex gap-4 overflow-x-auto pb-4 md:grid ${
+                viewDuration === "week" ? "md:grid-cols-7" : "md:grid-cols-4"
+            } md:overflow-x-visible md:pb-0 md:gap-4 mt-6`}>
         {weekDays.map((day) => {
           const dateISO = formatDateISO(day)
           const dayEvents = filteredEvents
@@ -300,10 +375,10 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
                       const dotColor = isGrowth ? "#22C55E" : getPhaseColor(event.eventType)
 
                       return (
-                          <div
-                            key={event.id}
-                            className={idx < displayEvents.length - 1 ? "border-b border-[#E5E7EB] pb-3" : ""}
-                          >
+                        <div
+                          key={event.id}
+                          className={idx < displayEvents.length - 1 ? "border-b border-[#E5E7EB] pb-3" : ""}
+                        >
                           <button
                             onClick={() => handleEventClick(event)}
                             className={`w-full text-left transition-all duration-150 rounded-lg px-2 py-1.5 -mx-2 -my-1.5 ${
