@@ -394,11 +394,9 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
                             <p className="text-[11px] truncate mt-0.5" style={{ color: dotColor }}>
                               {event.eventType}
                             </p>
-                            {event.startTime && event.endTime && (
-                              <p className="text-[10px] text-[#9CA3AF] leading-relaxed mt-1">
-                                {formatTimeRange(event.startTime, event.endTime)}
-                              </p>
-                            )}
+                            <p className="text-[10px] text-[#9CA3AF] leading-relaxed mt-1 min-h-[1.5em]">
+                              {formatTimeRange(event.startTime, event.endTime) || "\u00A0"}
+                            </p>
                           </button>
                         </div>
                       )

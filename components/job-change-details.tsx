@@ -131,7 +131,7 @@ export function JobChangeDetails({ profile, isMasked, entries }: JobChangeDetail
             className="w-full px-6 py-4 md:px-10 md:py-5 flex items-center justify-between hover:bg-[#F9FAFB] transition-colors"
           >
             <h2 className="text-base md:text-lg font-semibold text-[#1F2937] tracking-wide">
-              転職活動について
+              あなたの転職活動について
             </h2>
             <ChevronDown 
               className={`h-5 w-5 text-[#6B7280] transition-transform duration-300 ${
