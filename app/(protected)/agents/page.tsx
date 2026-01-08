@@ -460,7 +460,7 @@ export default function AgentsPipelinePage() {
         <div className="max-w-[1600px] mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🍬</span>
+              <span className="text-2xl">🍭</span>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">Candi for Agents</h1>
                 <p className="text-xs text-gray-500">パイプライン管理</p>

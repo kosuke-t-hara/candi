@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createToroEntry, updateToroEntry } from '@/app/actions/toro'
-import { generateQuestion } from '@/app/actions/ai'
+import { generateQuestion, formatText } from '@/app/actions/ai'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
-import { Mic, Sparkles } from 'lucide-react'
+import { Mic, Sparkles, Wand } from 'lucide-react'
 import { useSpeechToTextJa } from '@/app/hooks/useSpeechToTextJa'
 import { toast } from 'sonner'
 import {
@@ -136,6 +136,29 @@ export function ToroComposer({
     }
   }
 
+  const handleFormatText = async () => {
+    if (!content.trim() || isGenerating) return
+    
+    // 3000文字制限
+    const textToProcess = content.trim().slice(0, 3000)
+    
+    setIsGenerating(true)
+    try {
+      const formatted = await formatText(textToProcess)
+      
+      setContent(formatted)
+      onContentChange?.(formatted)
+      
+      toast.success('読みやすく整えました')
+
+    } catch (error) {
+      console.error('Failed to format text:', error)
+      toast.error('整えられませんでした。もう一度お試しください')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!entryId && !content.trim()) return
 
@@ -215,6 +238,24 @@ export function ToroComposer({
           )}
 
           <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleFormatText}
+                    disabled={isGenerating || !content.trim()}
+                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    type="button"
+                  >
+                    <Wand className="w-5 h-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
+                  話し言葉を読みやすく整えます 。内容は変わりません
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -92,3 +92,79 @@ ${truncatedText}`,
     throw error
   }
 }
+
+export async function formatText(text: string) {
+  if (!text) {
+    throw new Error('Text is required')
+  }
+
+  // 3000文字制限
+  const truncatedText = text.trim().slice(0, 3000)
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `あなたは編集者・校正者ではありません。
+「思考を止めないための杖」として振る舞ってください。
+
+目的は、
+「ユーザーが書きなぐった口語的な文章を、
+　本人が読み返した時にスッと頭に入る『読みやすい日本語』に整えること」です。
+
+【重要な制約】
+- 意味・ニュアンス・感情は**絶対に変えない**
+- 新しい情報の追加は禁止
+- 「〜だそうです」「〜とのことです」といった伝聞調は禁止
+- 評価・分析・アドバイスは禁止
+- 出力は「整えられた文章」のみ
+
+【行うこと】
+- 句読点の適切な補完
+- 改行位置の整理（読みやすさ重視）
+- 「あー」「えっと」など、意味を持たない繋ぎ言葉の削除
+- 冗長な繰り返しを整理
+- 文体の統一（ですます調なら維持、だ・である調なら維持）
+
+【入力】
+${truncatedText}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.3, // 創造性は低めに、忠実性を重視
+            maxOutputTokens: 2048,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Gemini API Error (formatText):', errorData)
+      throw new Error('Failed to format text')
+    }
+
+    const data = await response.json()
+    const formattedText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+
+    if (!formattedText) {
+      throw new Error('No formatted text generated')
+    }
+
+    return formattedText
+  } catch (error) {
+    console.error('AI Formatting Error:', error)
+    throw error
+  }
+}
