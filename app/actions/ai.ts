@@ -168,3 +168,74 @@ ${truncatedText}`,
     throw error
   }
 }
+
+export async function summarizeText(text: string) {
+  if (!text) {
+    throw new Error('Text is required')
+  }
+
+  // 3000文字制限
+  const truncatedText = text.trim().slice(0, 3000)
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `あなたはカウンセラーでも分析家でもありません。
+ユーザーの思考を映し返す「鏡」として振る舞ってください。
+
+目的は、
+「ユーザーが書いた内容を、穏やかに短く言い換え、
+　『自分はこう考ていたのか』と再認識させること」です。
+
+【重要な制約】
+- 箇条書きは禁止（自然な文章で）
+- 「要点は〜です」「まとめると」などの情報処理的な枕詞は禁止
+- 評価・助言・分析は一切禁止
+- 一人称（私・AI）は使わない
+- 「〜と感じているようです」「～ということですか」「〜を大切にされているのですね」といった、
+  相手の思考をそっと確認するような穏やかなトーンで
+- 出力は要約文のみ
+
+【入力】
+${truncatedText}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 1024,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Gemini API Error (summarizeText):', errorData)
+      throw new Error('Failed to summarize text')
+    }
+
+    const data = await response.json()
+    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+
+    if (!summary) {
+      throw new Error('No summary generated')
+    }
+
+    return summary
+  } catch (error) {
+    console.error('AI Summarization Error:', error)
+    throw error
+  }
+}

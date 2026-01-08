@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createToroEntry, updateToroEntry } from '@/app/actions/toro'
-import { generateQuestion, formatText } from '@/app/actions/ai'
+import { generateQuestion, formatText, summarizeText } from '@/app/actions/ai'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
-import { Mic, Sparkles, Wand } from 'lucide-react'
+import { Mic, Sparkles, Wand, Minimize2 } from 'lucide-react'
 import { useSpeechToTextJa } from '@/app/hooks/useSpeechToTextJa'
 import { toast } from 'sonner'
 import {
@@ -159,6 +159,41 @@ export function ToroComposer({
     }
   }
 
+  const handleSummarizeText = async () => {
+    if (!content.trim() || isGenerating) return
+    
+    // 3000文字制限
+    const textToProcess = content.trim().slice(0, 3000)
+    
+    setIsGenerating(true)
+    try {
+      const summary = await summarizeText(textToProcess)
+      
+      const suffix = `\n\n> ${summary}\n`
+      const newContent = content + suffix
+      
+      setContent(newContent)
+      onContentChange?.(newContent)
+      
+      // フォーカスとカーソル位置の制御
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const textarea = textareaRef.current
+          textarea.focus()
+          const length = newContent.length
+          textarea.setSelectionRange(length, length)
+          textarea.scrollTop = textarea.scrollHeight
+        }
+      }, 0)
+      
+    } catch (error) {
+      console.error('Failed to summarize text:', error)
+      toast.error('要約できませんでした。もう一度お試しください')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!entryId && !content.trim()) return
 
@@ -252,6 +287,24 @@ export function ToroComposer({
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
                   話し言葉を読みやすく整えます 。内容は変わりません
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleSummarizeText}
+                    disabled={isGenerating || !content.trim()}
+                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    type="button"
+                  >
+                    <Minimize2 className="w-5 h-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
+                  書いている内容を、短く言い換えて返します
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
