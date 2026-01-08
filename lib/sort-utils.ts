@@ -30,21 +30,18 @@ export function parseDateToValue(dateStr: string | undefined): number | null {
   return null
 }
 
-/**
- * Derives the comparison value for an application based on its events.
- * Logic matches getDisplayEventLabel for synchronization.
- */
 export function getRelevantEventSortValue(app: Application): number {
   if (!app.events || app.events.length === 0) {
     return 99991231 * 10000 // Last fallback
   }
 
-  // Current time for comparison (system date: 2026-01-03)
-  const now = new Date("2026-01-03T00:00:00").getTime()
+  // Current time for comparison
+  const now = new Date().getTime()
   
   const parsedEvents = app.events.map(e => {
     const dateVal = parseDateToValue(e.date) || 99991231
     const timeVal = parseTimeToMinutes(e.startTime) || 0
+    // Use T format without Z to treat as local time (JST in browser)
     const timestamp = new Date(`${e.date}T${e.startTime || '00:00'}`).getTime()
     return { timestamp, sortKey: dateVal * 10000 + timeVal }
   }).sort((a, b) => a.timestamp - b.timestamp)

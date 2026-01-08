@@ -22,7 +22,8 @@ export function getNextEvent(events: ApplicationEvent[]) {
   if (!events) return null
   const now = new Date()
   const futureEvents = events.filter((e) => {
-    const eventDate = new Date(`${e.date}T${e.startTime}`)
+    // Treat as local time (JST)
+    const eventDate = new Date(`${e.date}T${e.startTime || '00:00'}`)
     return eventDate > now
   })
 
@@ -251,10 +252,8 @@ export function getDisplayEventLabel(events: ApplicationEvent[], currentStage: s
 
   const now = new Date()
   
-  // Helper to parse event date
+  // Helper to parse event date as local time (JST)
   const parseEventDate = (e: ApplicationEvent) => {
-    // combine date and startTime for precision, default to end of day if no time?
-    // actually mock data has time.
     return new Date(`${e.date}T${e.startTime || '00:00'}`)
   }
 
@@ -263,7 +262,7 @@ export function getDisplayEventLabel(events: ApplicationEvent[], currentStage: s
     date: parseEventDate(e)
   })).sort((a, b) => a.date.getTime() - b.date.getTime())
 
-  // Find first future event
+  // Find first future event or event happening exactly now
   const futureEvent = sortedEvents.find(item => item.date >= now)
 
   if (futureEvent) {
@@ -291,7 +290,7 @@ export function getDisplayStatus(app: { events: ApplicationEvent[], applicationS
 
   const now = new Date()
   
-  // Sort events by date to find the most relevant one
+  // Sort events by date to find the most relevant one, treating as local time (JST)
   const sortedEvents = [...app.events].map(e => ({
     event: e,
     date: new Date(`${e.date}T${e.startTime || '00:00'}`)
