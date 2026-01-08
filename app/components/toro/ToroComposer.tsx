@@ -40,7 +40,9 @@ export function ToroComposer({
   const [content, setContent] = useState(defaultValue)
   const [isSaving, setIsSaving] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+
   const [isLoaded, setIsLoaded] = useState(false)
+  const [formattedOrigin, setFormattedOrigin] = useState<string | null>(null)
   
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -137,6 +139,15 @@ export function ToroComposer({
   }
 
   const handleFormatText = async () => {
+    // Undo機能: もし直前の整形履歴があれば、それを復元する
+    if (formattedOrigin !== null) {
+      setContent(formattedOrigin)
+      onContentChange?.(formattedOrigin)
+      setFormattedOrigin(null)
+      toast.success('元に戻しました')
+      return
+    }
+
     if (!content.trim() || isGenerating) return
     
     // 3000文字制限
@@ -146,6 +157,8 @@ export function ToroComposer({
     try {
       const formatted = await formatText(textToProcess)
       
+      // 現在の内容を履歴に保存してから更新
+      setFormattedOrigin(content)
       setContent(formatted)
       onContentChange?.(formatted)
       
@@ -221,6 +234,7 @@ export function ToroComposer({
       return
     }
 
+    setFormattedOrigin(null) // 保存時はUndo履歴をクリア
     setIsSaving(true)
     try {
       if (entryId) {
@@ -252,6 +266,8 @@ export function ToroComposer({
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value
+    // ユーザーが手動編集したらUndo履歴はクリアする
+    setFormattedOrigin(null)
     setContent(val)
     onContentChange?.(val)
   }
@@ -278,15 +294,19 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleFormatText}
-                    disabled={isGenerating || !content.trim()}
-                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    disabled={isGenerating || (!formattedOrigin && !content.trim())}
+                    className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                      formattedOrigin 
+                        ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 opacity-100' 
+                        : 'text-black/40 hover:text-black/60 hover:bg-black/5 opacity-60 hover:opacity-100'
+                    }`}
                     type="button"
                   >
-                    <Wand className="w-5 h-5" />
+                    <Wand className={`w-5 h-5 ${formattedOrigin ? 'animate-pulse' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
-                  話し言葉を読みやすく整えます 。内容は変わりません
+                  {formattedOrigin ? '整形前の文章に戻します' : '話し言葉を読みやすく整えます 。内容は変わりません'}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
