@@ -46,6 +46,8 @@ export function ToroComposer({
 
   const [isLoaded, setIsLoaded] = useState(false)
   const [formattedOrigin, setFormattedOrigin] = useState<string | null>(null)
+  const [questionOrigin, setQuestionOrigin] = useState<string | null>(null)
+  const [summaryOrigin, setSummaryOrigin] = useState<string | null>(null)
   
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -107,10 +109,23 @@ export function ToroComposer({
   }
 
   const handleGenerateQuestion = async () => {
+    // Undo機能
+    if (questionOrigin !== null) {
+      setContent(questionOrigin)
+      onContentChange?.(questionOrigin)
+      setQuestionOrigin(null)
+      toast.success('元に戻しました')
+      return
+    }
+
     if (!content.trim() || isQuestionGenerating || isFormatting || isSummarizing) return
     
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
+    
+    // 他のUndo履歴をクリア
+    setFormattedOrigin(null)
+    setSummaryOrigin(null)
     
     setIsQuestionGenerating(true)
     try {
@@ -119,6 +134,7 @@ export function ToroComposer({
       const suffix = `\n\n> ${question}\n`
       const newContent = content + suffix
       
+      setQuestionOrigin(content)
       setContent(newContent)
       onContentChange?.(newContent)
       
@@ -156,6 +172,10 @@ export function ToroComposer({
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
     
+    // 他のUndo履歴をクリア
+    setQuestionOrigin(null)
+    setSummaryOrigin(null)
+    
     setIsFormatting(true)
     try {
       const formatted = await formatText(textToProcess)
@@ -176,10 +196,23 @@ export function ToroComposer({
   }
 
   const handleSummarizeText = async () => {
+    // Undo機能
+    if (summaryOrigin !== null) {
+      setContent(summaryOrigin)
+      onContentChange?.(summaryOrigin)
+      setSummaryOrigin(null)
+      toast.success('元に戻しました')
+      return
+    }
+
     if (!content.trim() || isQuestionGenerating || isFormatting || isSummarizing) return
     
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
+    
+    // 他のUndo履歴をクリア
+    setFormattedOrigin(null)
+    setQuestionOrigin(null)
     
     setIsSummarizing(true)
     try {
@@ -188,6 +221,7 @@ export function ToroComposer({
       const suffix = `\n\n> ${summary}\n`
       const newContent = content + suffix
       
+      setSummaryOrigin(content)
       setContent(newContent)
       onContentChange?.(newContent)
       
@@ -238,6 +272,8 @@ export function ToroComposer({
     }
 
     setFormattedOrigin(null) // 保存時はUndo履歴をクリア
+    setQuestionOrigin(null)
+    setSummaryOrigin(null)
     setIsSaving(true)
     try {
       if (entryId) {
@@ -271,6 +307,8 @@ export function ToroComposer({
     const val = e.target.value
     // ユーザーが手動編集したらUndo履歴はクリアする
     setFormattedOrigin(null)
+    setQuestionOrigin(null)
+    setSummaryOrigin(null)
     setContent(val)
     onContentChange?.(val)
   }
@@ -322,18 +360,22 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleSummarizeText}
-                    disabled={isSummarizing || isQuestionGenerating || isFormatting || !content.trim()}
-                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    disabled={isSummarizing || isQuestionGenerating || isFormatting || (!summaryOrigin && !content.trim())}
+                    className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                      summaryOrigin
+                        ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 opacity-100'
+                        : 'text-black/40 hover:text-black/60 hover:bg-black/5 opacity-60 hover:opacity-100'
+                    }`}
                   >
                     {isSummarizing ? (
                       <LoadingSpinner size={18} />
                     ) : (
-                      <Minimize2 className="w-5 h-5" />
+                      <Minimize2 className={`w-5 h-5 ${summaryOrigin ? 'animate-pulse' : ''}`} />
                     )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
-                  書いている内容を、短く言い換えて返します
+                  {summaryOrigin ? '要約前の文章に戻します' : '書いている内容を、短く言い換えて返します'}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -343,19 +385,23 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleGenerateQuestion}
-                    disabled={isQuestionGenerating || isFormatting || isSummarizing || !content.trim()}
-                    className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/60 hover:text-black/80 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
+                    disabled={isQuestionGenerating || isFormatting || isSummarizing || (!questionOrigin && !content.trim())}
+                    className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                      questionOrigin
+                        ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 opacity-100'
+                        : 'text-black/60 hover:text-black/80 hover:bg-black/5 opacity-60 hover:opacity-100'
+                    }`}
                     type="button"
                   >
                     {isQuestionGenerating ? (
                       <LoadingSpinner size={18} />
                     ) : (
-                      <Sparkles className="w-5 h-5" />
+                      <Sparkles className={`w-5 h-5 ${questionOrigin ? 'animate-pulse' : ''}`} />
                     )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
-                  内容をもとに、考えを深める問いを生成します
+                  {questionOrigin ? '問い生成前の文章に戻します' : '内容をもとに、考えを深める問いを生成します'}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
