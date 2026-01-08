@@ -39,7 +39,10 @@ export function ToroComposer({
 }: ToroComposerProps) {
   const [content, setContent] = useState(defaultValue)
   const [isSaving, setIsSaving] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
+  
+  const [isQuestionGenerating, setIsQuestionGenerating] = useState(false)
+  const [isFormatting, setIsFormatting] = useState(false)
+  const [isSummarizing, setIsSummarizing] = useState(false)
 
   const [isLoaded, setIsLoaded] = useState(false)
   const [formattedOrigin, setFormattedOrigin] = useState<string | null>(null)
@@ -104,12 +107,12 @@ export function ToroComposer({
   }
 
   const handleGenerateQuestion = async () => {
-    if (!content.trim() || isGenerating) return
+    if (!content.trim() || isQuestionGenerating || isFormatting || isSummarizing) return
     
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
     
-    setIsGenerating(true)
+    setIsQuestionGenerating(true)
     try {
       const question = await generateQuestion(textToProcess)
       
@@ -134,7 +137,7 @@ export function ToroComposer({
       console.error('Failed to generate question:', error)
       toast.error('問いを生成できませんでした。もう一度お試しください')
     } finally {
-      setIsGenerating(false)
+      setIsQuestionGenerating(false)
     }
   }
 
@@ -148,12 +151,12 @@ export function ToroComposer({
       return
     }
 
-    if (!content.trim() || isGenerating) return
+    if (!content.trim() || isQuestionGenerating || isFormatting || isSummarizing) return
     
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
     
-    setIsGenerating(true)
+    setIsFormatting(true)
     try {
       const formatted = await formatText(textToProcess)
       
@@ -168,17 +171,17 @@ export function ToroComposer({
       console.error('Failed to format text:', error)
       toast.error('整えられませんでした。もう一度お試しください')
     } finally {
-      setIsGenerating(false)
+      setIsFormatting(false)
     }
   }
 
   const handleSummarizeText = async () => {
-    if (!content.trim() || isGenerating) return
+    if (!content.trim() || isQuestionGenerating || isFormatting || isSummarizing) return
     
     // 3000文字制限
     const textToProcess = content.trim().slice(0, 3000)
     
-    setIsGenerating(true)
+    setIsSummarizing(true)
     try {
       const summary = await summarizeText(textToProcess)
       
@@ -203,7 +206,7 @@ export function ToroComposer({
       console.error('Failed to summarize text:', error)
       toast.error('要約できませんでした。もう一度お試しください')
     } finally {
-      setIsGenerating(false)
+      setIsSummarizing(false)
     }
   }
 
@@ -294,7 +297,7 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleFormatText}
-                    disabled={isGenerating || (!formattedOrigin && !content.trim())}
+                    disabled={isFormatting || isQuestionGenerating || isSummarizing || (!formattedOrigin && !content.trim())}
                     className={`relative flex items-center justify-center p-2 rounded-full transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
                       formattedOrigin 
                         ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 opacity-100' 
@@ -302,7 +305,7 @@ export function ToroComposer({
                     }`}
                     type="button"
                   >
-                    <Wand className={`w-5 h-5 ${formattedOrigin ? 'animate-pulse' : ''}`} />
+                    <Wand className={`w-5 h-5 ${formattedOrigin || isFormatting ? 'animate-pulse' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
@@ -316,7 +319,7 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleSummarizeText}
-                    disabled={isGenerating || !content.trim()}
+                    disabled={isSummarizing || isQuestionGenerating || isFormatting || !content.trim()}
                     className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
                     type="button"
                   >
@@ -334,11 +337,11 @@ export function ToroComposer({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleGenerateQuestion}
-                    disabled={isGenerating || !content.trim()}
+                    disabled={isQuestionGenerating || isFormatting || isSummarizing || !content.trim()}
                     className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/60 hover:text-black/80 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
                     type="button"
                   >
-                    {isGenerating ? (
+                    {isQuestionGenerating ? (
                       <LoadingSpinner size={18} />
                     ) : (
                       <Sparkles className="w-5 h-5" />
@@ -374,7 +377,7 @@ export function ToroComposer({
 
           <button
             onClick={handleSave}
-            disabled={isSaving || isGenerating || (!entryId && !content.trim())}
+            disabled={isSaving || isQuestionGenerating || isFormatting || isSummarizing || (!entryId && !content.trim())}
             className="px-6 py-2 text-sm font-light tracking-widest border border-black/10 rounded-full hover:border-black/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center min-w-[80px]"
             type="button"
           >
