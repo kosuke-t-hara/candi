@@ -303,9 +303,12 @@ export function ToroComposer({
                         ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 opacity-100' 
                         : 'text-black/40 hover:text-black/60 hover:bg-black/5 opacity-60 hover:opacity-100'
                     }`}
-                    type="button"
                   >
-                    <Wand className={`w-5 h-5 ${formattedOrigin || isFormatting ? 'animate-pulse' : ''}`} />
+                    {isFormatting ? (
+                      <LoadingSpinner size={18} />
+                    ) : (
+                      <Wand className={`w-5 h-5 ${formattedOrigin ? 'animate-pulse' : ''}`} />
+                    )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
@@ -321,9 +324,12 @@ export function ToroComposer({
                     onClick={handleSummarizeText}
                     disabled={isSummarizing || isQuestionGenerating || isFormatting || !content.trim()}
                     className="relative flex items-center justify-center p-2 rounded-full transition-all duration-300 text-black/40 hover:text-black/60 hover:bg-black/5 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed opacity-60 hover:opacity-100"
-                    type="button"
                   >
-                    <Minimize2 className="w-5 h-5" />
+                    {isSummarizing ? (
+                      <LoadingSpinner size={18} />
+                    ) : (
+                      <Minimize2 className="w-5 h-5" />
+                    )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[10px] py-1 px-2 mb-1">
