@@ -298,6 +298,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
                   setIsToroSheetOpen(false)
                   router.refresh()
                 }}
+                context={{ type: 'hitokoto' }}
                 className="mt-0"
                 placeholder="今の気持ちを、そのままに。"
               />

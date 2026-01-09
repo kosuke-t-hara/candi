@@ -48,6 +48,7 @@ export default function WriteClient({ isAuthenticated }: WriteClientProps) {
         defaultValue={initialContent}
         onSaved={handleSaved}
         onContentChange={handleContentChange}
+        context={{ type: 'hitokoto' }}
       />
       
       <div className="flex justify-start mt-8">
