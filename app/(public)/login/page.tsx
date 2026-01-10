@@ -20,7 +20,7 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const supabase = createClient()
 
-  const returnUrl = searchParams.get('returnUrl') || '/'
+  const returnUrl = searchParams.get('returnUrl') || '/candi'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
