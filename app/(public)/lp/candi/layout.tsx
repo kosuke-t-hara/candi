@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className={`${notoSansJP.className} antialiased min-h-screen bg-background text-foreground`}>
+    <div className={`${notoSansJP.className} font-lp-sans antialiased min-h-screen bg-background text-foreground`}>
       {children}
       <Analytics />
       <Script
