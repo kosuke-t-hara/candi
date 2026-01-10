@@ -27,7 +27,7 @@ export function Footer() {
             <Link href="/terms/candi" className="transition-colors hover:text-accent-foreground/80">
               Candi 利用規約
             </Link>
-            <Link href="/privacy" className="transition-colors hover:text-accent-foreground/80">
+            <Link href="/privacy/candi" className="transition-colors hover:text-accent-foreground/80">
               プライバシーポリシー
             </Link>
             <Link href="/lp/candi/story" className="transition-colors hover:text-accent-foreground/80">

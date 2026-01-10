@@ -138,7 +138,7 @@ function LoginForm() {
               </Link>
               および
               <Link 
-                href="/privacy" 
+                href="/privacy/candi" 
                 target="_blank"
                 className="underline underline-offset-2 hover:text-gray-800 transition-colors"
               >
