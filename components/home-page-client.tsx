@@ -240,12 +240,14 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           />
         )}
 
-        <WeeklySchedule
-          isMasked={isMasked}
-          onEventClick={handleApplicationClick}
-          applications={ongoingApplications}
-          growthLogs={initialGrowthLogs}
-        />
+        {applications.length > 0 && (
+          <WeeklySchedule
+            isMasked={isMasked}
+            onEventClick={handleApplicationClick}
+            applications={ongoingApplications}
+            growthLogs={initialGrowthLogs}
+          />
+        )}
         <div id="ongoing-applications" className="mt-12 md:mt-16">
           {sortMode !== "archived" && ongoingApplications.length === 0 ? (
             <EmptyApplicationState onAddClick={() => setIsSheetOpen(true)} />
