@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   '/tos',
   '/privacy',
   '/lp',
+  '/terms',
 ]
 
 export async function middleware(request: NextRequest) {

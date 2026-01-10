@@ -20,7 +20,7 @@ export function Footer() {
           </div>
 
           <div className="mt-10 flex items-center gap-4 text-sm text-accent-foreground/60">
-            <Link href="/terms" className="transition-colors hover:text-accent-foreground/80">
+            <Link href="/terms/candi" className="transition-colors hover:text-accent-foreground/80">
               利用規約
             </Link>
             <span>|</span>
