@@ -25,6 +25,7 @@ interface ToroComposerProps {
   entryId?: string // Add entryId to identify if we are editing
   className?: string
   placeholder?: string
+  label?: string
 }
 
 export function ToroComposer({ 
@@ -35,7 +36,8 @@ export function ToroComposer({
   context,
   entryId,
   className = '',
-  placeholder = "今の気持ちを、そのままに。"
+  placeholder = "今の気持ちを、そのままに。",
+  label
 }: ToroComposerProps) {
   const [content, setContent] = useState(defaultValue)
   const [isSaving, setIsSaving] = useState(false)
@@ -129,7 +131,7 @@ export function ToroComposer({
     
     setIsQuestionGenerating(true)
     try {
-      const question = await generateQuestion(textToProcess)
+      const question = await generateQuestion(textToProcess, label)
       
       const suffix = `\n\n> ${question}\n`
       const newContent = content + suffix
@@ -178,7 +180,7 @@ export function ToroComposer({
     
     setIsFormatting(true)
     try {
-      const formatted = await formatText(textToProcess)
+      const formatted = await formatText(textToProcess, label)
       
       // 現在の内容を履歴に保存してから更新
       setFormattedOrigin(content)
@@ -216,7 +218,7 @@ export function ToroComposer({
     
     setIsSummarizing(true)
     try {
-      const summary = await summarizeText(textToProcess)
+      const summary = await summarizeText(textToProcess, label)
       
       const suffix = `\n\n> ${summary}\n`
       const newContent = content + suffix

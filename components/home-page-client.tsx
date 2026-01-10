@@ -287,6 +287,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
                 context={{ type: 'hitokoto' }}
                 className="mt-0"
                 placeholder="今の気持ちを、そのままに。"
+                label="今のひとこと"
               />
             </div>
           </div>

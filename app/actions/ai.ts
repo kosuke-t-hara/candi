@@ -1,6 +1,6 @@
 'use server'
 
-export async function generateQuestion(text: string) {
+export async function generateQuestion(text: string, contextLabel?: string) {
   if (!text) {
     throw new Error('Text is required')
   }
@@ -24,7 +24,11 @@ export async function generateQuestion(text: string) {
                   text: `あなたはカウンセラーではありません。
 助言・分析・要約・評価は一切行ってはいけません。
 
-目的は、
+${contextLabel ? `【前提】
+ユーザーは「${contextLabel}」について記述しています。
+この前提を踏まえて、問いを生成してください。
+
+` : ''}目的は、
 「ユーザー自身が、もう一段深い独白を書き始められるような
 　静かで、押し付けない“問い”を1つ生成すること」です。
 
@@ -93,7 +97,7 @@ ${truncatedText}`,
   }
 }
 
-export async function formatText(text: string) {
+export async function formatText(text: string, contextLabel?: string) {
   if (!text) {
     throw new Error('Text is required')
   }
@@ -117,7 +121,11 @@ export async function formatText(text: string) {
                   text: `あなたは編集者・校正者ではありません。
 「思考を止めないための杖」として振る舞ってください。
 
-目的は、
+${contextLabel ? `【前提】
+ユーザーは「${contextLabel}」について記述しています。
+この文脈を尊重しつつ、整えてください。
+
+` : ''}目的は、
 「ユーザーが書きなぐった口語的な文章を、
 　本人が読み返した時にスッと頭に入る『読みやすい日本語』に整えること」です。
 
@@ -169,7 +177,7 @@ ${truncatedText}`,
   }
 }
 
-export async function summarizeText(text: string) {
+export async function summarizeText(text: string, contextLabel?: string) {
   if (!text) {
     throw new Error('Text is required')
   }
@@ -193,7 +201,11 @@ export async function summarizeText(text: string) {
                   text: `あなたはカウンセラーでも分析家でもありません。
 ユーザーの思考を映し返す「鏡」として振る舞ってください。
 
-目的は、
+${contextLabel ? `【前提】
+ユーザーは「${contextLabel}」について記述しています。
+この文脈を踏まえて、要約してください。
+
+` : ''}目的は、
 「ユーザーが書いた内容を、穏やかに短く言い換え、
 　『自分はこう考えていたのか』と再認識させること」です。
 

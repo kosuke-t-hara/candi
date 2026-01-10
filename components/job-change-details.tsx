@@ -218,6 +218,7 @@ export function JobChangeDetails({ profile, isMasked, entries }: JobChangeDetail
                   context={getContext(activeSheet)}
                   className="mt-0"
                   placeholder={getPlaceholder(activeSheet)}
+                  label={getSheetTitle()}
                 />
               )}
             </div>
