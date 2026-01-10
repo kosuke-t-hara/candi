@@ -97,6 +97,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
   const [sortMode, setSortMode] = useState<SortMode>("nextEvent")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
   const [applications, setApplications] = useState<Application[]>(initialApplications)
 
   // Sync props to state if needed (e.g. after server revalidation)
@@ -104,7 +105,9 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
     setApplications(initialApplications)
   }, [initialApplications])
 
-
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const activeApplications = sortMode === "archived" 
     ? applications.filter((app) => app.applicationStatus === "closed")
@@ -114,27 +117,10 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
   const ongoingApplications = activeApplications
   
   // Calculate stats for CandidateSummary
+  // Gate date-dependent logic with isMounted to avoid hydration mismatch
   const ongoingCount = ongoingApplications.length
   
-  const weeklyActivitiesCount = applications.reduce((acc, app) => {
-    const today = new Date()
-    const oneWeekLater = new Date(today)
-    oneWeekLater.setDate(today.getDate() + 7)
-    
-    // Check events
-    const hasWeeklyEvent = app.events.some(e => {
-      const eventDate = new Date(e.date)
-      return eventDate >= today && eventDate <= oneWeekLater
-    })
-    
-    return acc + (hasWeeklyEvent ? 1 : 0) // Count applications that have activity? Or count total events?
-    // User asked for "この期間の転職活動...の件数". 
-    // "Number of job changing activities in this period". 
-    // Usually means number of events. Let's count total events in the week.
-  }, 0)
-
-  // Re-calculating correctly for events count
-  const weeklyEventCount = applications.reduce((acc, app) => {
+  const weeklyEventCount = isMounted ? applications.reduce((acc, app) => {
     const today = new Date()
     today.setHours(0,0,0,0) // Normalize today
     const oneWeekLater = new Date(today)
@@ -146,7 +132,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
     }).length
     
     return acc + eventsInWeek
-  }, 0)
+  }, 0) : 0
 
   const handleScrollToApplications = () => {
     const element = document.getElementById("ongoing-applications")

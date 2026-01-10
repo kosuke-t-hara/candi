@@ -55,7 +55,7 @@ export function Header() {
                 
                 <div className="flex-1 px-3 py-6 space-y-2">
                   <Link
-                    href="/"
+                    href="/past?type=hitokoto&from=candi"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-white/80 hover:text-white transition-all group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/20">

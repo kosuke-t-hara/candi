@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { X, Archive, RotateCcw } from 'lucide-react'
 import { archiveToroEntry, unarchiveToroEntry } from '@/app/actions/toro'
 import { LoadingOverlay } from '@/components/ui/loading-overlay'
@@ -23,6 +23,8 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
   const [isConfirming, setIsConfirming] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get('from')
 
   const handleClose = () => {
     setIsClosing(true)
@@ -31,6 +33,16 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
       setIsClosing(false)
       setIsConfirming(false)
     }, 300)
+  }
+
+  const handleBack = () => {
+    if (isArchivedView) {
+      router.push('/past')
+    } else if (from === 'candi') {
+      router.push('/candi')
+    } else {
+      router.push('/')
+    }
   }
 
   const handleArchive = async () => {
@@ -123,7 +135,7 @@ export default function PastClient({ entries, isArchivedView = false }: PastClie
             {isArchivedView ? 'しまったもの' : ''}
           </h1>
           <button 
-            onClick={() => isArchivedView ? router.push('/past') : router.push('/')}
+            onClick={handleBack}
             className="text-xs text-black/20 hover:text-black/40 transition-colors"
           >
             戻る

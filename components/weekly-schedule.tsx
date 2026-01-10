@@ -120,33 +120,19 @@ const STORAGE_KEY = 'weekly-schedule-expanded'
 const VIEW_DURATION_KEY = 'weekly-schedule-view-duration'
 
 export function WeeklySchedule({ isMasked, onEventClick, applications, growthLogs }: WeeklyScheduleProps) {
-  // <CHANGE> Use today as default baseDate
-  const [baseDate, setBaseDate] = useState(new Date())
+  // <CHANGE> Use null as initial value to avoid hydration mismatch
+  const [baseDate, setBaseDate] = useState<Date | null>(null)
   const [isExpanded, setIsExpanded] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
   
   // <CHANGE> 4-day view support
   const [viewDuration, setViewDuration] = useState<"week" | "4days">("week")
 
-  // <CHANGE> Calculate weekDays based on baseDate and viewDuration
-  // To keep "Today" or the current period stable, we generate N days from baseDate
-  // If we change mode, we just show N days starting from the current baseDate
-  const daysToShow = viewDuration === "week" ? 7 : 4
-  const weekDays: Date[] = []
-  for (let i = 0; i < daysToShow; i++) {
-    const d = new Date(baseDate)
-    d.setDate(baseDate.getDate() + i)
-    weekDays.push(d)
-  }
-
-  const jobEvents = getEventsFromApplications(applications)
-  const growthEvents = getEventsFromGrowthLogs(growthLogs)
-  const allEvents = [...jobEvents, ...growthEvents]
-
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
-  const [eventFilter, setEventFilter] = useState<EventFilter>("all")
-
-  // Load state from localStorage
+  // Load state from localStorage and initialize baseDate
   useEffect(() => {
+    setIsMounted(true)
+    setBaseDate(new Date())
+
     const storedExpanded = localStorage.getItem(STORAGE_KEY)
     if (storedExpanded !== null) {
       setIsExpanded(storedExpanded === 'true')
@@ -157,6 +143,26 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
         setViewDuration(storedDuration)
     }
   }, [])
+
+  // <CHANGE> Calculate weekDays based on baseDate and viewDuration
+  // To keep "Today" or the current period stable, we generate N days from baseDate
+  // If we change mode, we just show N days starting from the current baseDate
+  const daysToShow = viewDuration === "week" ? 7 : 4
+  const weekDays: Date[] = []
+  if (baseDate) {
+    for (let i = 0; i < daysToShow; i++) {
+      const d = new Date(baseDate)
+      d.setDate(baseDate.getDate() + i)
+      weekDays.push(d)
+    }
+  }
+
+  const jobEvents = getEventsFromApplications(applications)
+  const growthEvents = getEventsFromGrowthLogs(growthLogs)
+  const allEvents = [...jobEvents, ...growthEvents]
+
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
+  const [eventFilter, setEventFilter] = useState<EventFilter>("all")
 
   // Save expanded state to localStorage
   const toggleExpanded = () => {
@@ -171,12 +177,14 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   }
 
   // <CHANGE> Filter events to show only those within the current visible range
-  const weekStartISO = formatDateISO(weekDays[0])
-  const weekEndISO = formatDateISO(weekDays[weekDays.length - 1])
+  const weekStartISO = weekDays.length > 0 ? formatDateISO(weekDays[0]) : ""
+  const weekEndISO = weekDays.length > 0 ? formatDateISO(weekDays[weekDays.length - 1]) : ""
 
   const filteredEvents = allEvents.filter((event) => {
     // Date range filter
-    if (event.date < weekStartISO || event.date > weekEndISO) return false
+    if (weekStartISO && weekEndISO) {
+      if (event.date < weekStartISO || event.date > weekEndISO) return false
+    }
 
     // Type filter
     if (eventFilter === "all") return true
@@ -184,6 +192,11 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
   })
 
   const jobEventsCount = filteredEvents.filter(e => e.sourceType === "job").length
+
+  // Return empty div if not mounted to prevent hydration errors from non-deterministic dates
+  if (!isMounted || !baseDate) {
+    return <div className="mt-10 md:mt-14 h-[400px]" />
+  }
   const growthEventsCount = filteredEvents.filter(e => e.sourceType === "growth").length
 
   const handleEventClick = (event: WeeklyEvent) => {
@@ -212,6 +225,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
 
   const handlePrevWeek = () => {
     setBaseDate(prev => {
+      if (!prev) return null
       const newDate = new Date(prev)
       newDate.setDate(prev.getDate() - jumpDays)
       return newDate
@@ -220,6 +234,7 @@ export function WeeklySchedule({ isMasked, onEventClick, applications, growthLog
 
   const handleNextWeek = () => {
     setBaseDate(prev => {
+      if (!prev) return null
       const newDate = new Date(prev)
       newDate.setDate(prev.getDate() + jumpDays)
       return newDate

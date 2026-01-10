@@ -37,7 +37,7 @@ export function LatestNote({ content, createdAt }: LatestNoteProps) {
             </button>
           )}
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-xs text-[#9CA3AF] font-medium">
+            <span className="text-xs text-[#9CA3AF] font-medium" suppressHydrationWarning>
               {new Date(createdAt).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
             </span>
             <div className="flex gap-1.5 items-center">

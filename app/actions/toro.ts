@@ -32,7 +32,7 @@ export async function createToroEntry(content: string, context?: any) {
   return data
 }
 
-export async function getToroEntries(showArchived: boolean = false) {
+export async function getToroEntries(showArchived: boolean = false, type?: string) {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -51,6 +51,10 @@ export async function getToroEntries(showArchived: boolean = false) {
     query = query.not('archived_at', 'is', null)
   } else {
     query = query.is('archived_at', null)
+  }
+
+  if (type) {
+    query = query.eq('context->>type', type)
   }
 
   const { data, error } = await query
