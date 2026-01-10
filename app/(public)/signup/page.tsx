@@ -152,6 +152,26 @@ export default function SignupPage() {
               )}
             </Button>
 
+            <div className="text-[11px] leading-relaxed text-gray-500/80 text-center px-4">
+              アカウントを作成することで、
+              <Link 
+                href="/terms/candi" 
+                target="_blank"
+                className="underline underline-offset-2 hover:text-gray-800 transition-colors"
+              >
+                Candi 利用規約
+              </Link>
+              および
+              <Link 
+                href="/privacy" 
+                target="_blank"
+                className="underline underline-offset-2 hover:text-gray-800 transition-colors"
+              >
+                プライバシーポリシー
+              </Link>
+              に同意したものとみなされます。
+            </div>
+
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
