@@ -35,12 +35,20 @@ export function HeroSection() {
               <Link href="/candi">Candiを使ってみる</Link>
             </Button>
             
-            <Link 
-              href="#after" 
-              className="text-base text-accent-foreground/60 hover:text-accent-foreground/80 transition-colors underline underline-offset-4 decoration-accent-foreground/20 hover:decoration-accent-foreground/40"
-            >
-              転職が終わったあと、何が残るか
-            </Link>
+            <div className="flex flex-col gap-3 items-start sm:items-center">
+              <Link 
+                href="#after" 
+                className="text-base text-accent-foreground/60 hover:text-accent-foreground/80 transition-colors underline underline-offset-4 decoration-accent-foreground/20 hover:decoration-accent-foreground/40"
+              >
+                転職が終わったあと、何が残るか
+              </Link>
+              <Link
+                href="/lp/candi/story"
+                className="text-sm text-accent-foreground/50 hover:text-accent-foreground/80 transition-colors hover:underline underline-offset-4"
+              >
+                あなたの「選び方」が残る理由 <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

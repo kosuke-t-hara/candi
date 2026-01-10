@@ -30,6 +30,9 @@ export function Footer() {
             <Link href="/privacy" className="transition-colors hover:text-accent-foreground/80">
               プライバシーポリシー
             </Link>
+            <Link href="/lp/candi/story" className="transition-colors hover:text-accent-foreground/80">
+              Candiの考え方
+            </Link>
           </div>
 
           <p className="mt-12 text-xs text-accent-foreground/40 font-mono tracking-widest uppercase">

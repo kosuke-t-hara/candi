@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { CheckCircle2 } from "lucide-react"
 
 const items = [
@@ -33,6 +34,14 @@ export function AfterSection() {
               <br />
               そうじゃない。次の意思決定のために。
             </p>
+            <div className="mt-8">
+              <Link
+                href="/lp/candi/story"
+                className="text-base text-foreground/60 hover:text-foreground/80 transition-colors hover:underline underline-offset-4 inline-flex items-center gap-1"
+              >
+                どんなものが残るかを見る <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
