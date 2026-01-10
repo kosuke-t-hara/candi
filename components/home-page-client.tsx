@@ -23,6 +23,7 @@ import { createEvent, updateEvent, deleteEvent } from "@/app/actions/events"
 import { addEventLink } from "@/app/actions/links"
 import { JobChangeDetails } from "@/components/job-change-details"
 import { LatestNote } from "@/components/latest-note"
+import { EmptyApplicationState } from "@/components/empty-application-state"
 import { type SortMode, type SortDirection } from "@/lib/sort-utils"
 import type { Application, ApplicationEvent, GrowthLog } from "@/lib/mock-data"
 import type { Database } from "@/lib/types/database"
@@ -246,26 +247,32 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           growthLogs={initialGrowthLogs}
         />
         <div id="ongoing-applications" className="mt-12 md:mt-16">
-          <ApplicationTable
-            isMasked={isMasked}
-            sortMode={sortMode}
-            sortDirection={sortDirection}
-            onSortModeChange={handleSortModeChange}
-            onSortDirectionToggle={handleSortDirectionToggle}
-            onApplicationClick={handleApplicationClick}
-            onAddClick={() => setIsSheetOpen(true)}
-            applications={ongoingApplications}
-          />
-          <ApplicationCardList
-            isMasked={isMasked}
-            sortMode={sortMode}
-            sortDirection={sortDirection}
-            onSortModeChange={handleSortModeChange}
-            onSortDirectionToggle={handleSortDirectionToggle}
-            onApplicationClick={handleApplicationClick}
-            onAddClick={() => setIsSheetOpen(true)}
-            applications={ongoingApplications}
-          />
+          {sortMode !== "archived" && ongoingApplications.length === 0 ? (
+            <EmptyApplicationState onAddClick={() => setIsSheetOpen(true)} />
+          ) : (
+            <>
+              <ApplicationTable
+                isMasked={isMasked}
+                sortMode={sortMode}
+                sortDirection={sortDirection}
+                onSortModeChange={handleSortModeChange}
+                onSortDirectionToggle={handleSortDirectionToggle}
+                onApplicationClick={handleApplicationClick}
+                onAddClick={() => setIsSheetOpen(true)}
+                applications={ongoingApplications}
+              />
+              <ApplicationCardList
+                isMasked={isMasked}
+                sortMode={sortMode}
+                sortDirection={sortDirection}
+                onSortModeChange={handleSortModeChange}
+                onSortDirectionToggle={handleSortDirectionToggle}
+                onApplicationClick={handleApplicationClick}
+                onAddClick={() => setIsSheetOpen(true)}
+                applications={ongoingApplications}
+              />
+            </>
+          )}
         </div>
       </main>
       <FloatingActionButton onClick={() => setIsToroSheetOpen(true)} />
