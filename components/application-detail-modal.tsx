@@ -697,6 +697,8 @@ export function ApplicationDetailModal({
         mode={editingEvent ? "edit" : "add"}
         existingEvent={editingEvent || undefined}
         applicationId={application.id}
+        companyName={application.company}
+        position={application.position}
       />
 
       <Sheet open={isToroOpen} onOpenChange={(open) => {
@@ -724,6 +726,7 @@ export function ApplicationDetailModal({
                 setMemoEntries(entries)
               }}
               className="h-full"
+              label={`${application.company} ${application.position} 応募`}
             />
           </div>
         </SheetContent>

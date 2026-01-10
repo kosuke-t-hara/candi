@@ -207,6 +207,8 @@ interface AddEventBottomSheetProps {
   mode?: EventSheetMode
   existingEvent?: ApplicationEvent
   applicationId?: string
+  companyName?: string
+  position?: string
 }
 
 export function AddEventBottomSheet({
@@ -217,7 +219,10 @@ export function AddEventBottomSheet({
   mode = "add",
   existingEvent,
   applicationId,
+  companyName,
+  position,
 }: AddEventBottomSheetProps) {
+
   const [isAnimating, setIsAnimating] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [eventType, setEventType] = useState<string>("カジュアル面談")
@@ -697,6 +702,7 @@ export function AddEventBottomSheet({
                 }
               }}
               className="h-full"
+              label={`${companyName || ''} ${position || ''} ${title || eventType} ${date} ${startTime}`.trim().replace(/\s+/g, ' ')}
             />
           </div>
         </SheetContent>
