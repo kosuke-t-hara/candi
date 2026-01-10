@@ -3,37 +3,44 @@ import { Button } from "@/components/ui/button"
 
 export function HeroSection() {
   return (
-    <section className="bg-accent text-accent-foreground">
-      <div className="px-5 py-4 md:px-8">
-        <span className="text-lg font-semibold tracking-tight">Candi</span>
-      </div>
+    <section className="bg-accent text-accent-foreground flex min-h-[90vh] flex-col">
+      <header className="px-5 py-6 md:px-8">
+        <span className="text-xl font-bold tracking-tight">Candi🍬</span>
+      </header>
 
-      <div className="px-5 pb-16 pt-12 md:px-8 md:pb-20 md:pt-16 lg:pb-24 lg:pt-20">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight md:text-4xl lg:text-5xl">
-            転職活動を、
+      <div className="flex flex-1 items-center px-5 pb-24 pt-12 md:px-8">
+        <div className="mx-auto max-w-3xl">
+          <h1 className="text-balance text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl lg:text-7xl">
+            転職の結果ではなく、
             <br />
-            ひとつの場所に集約する。
+            あなたの「選び方」を残す。
           </h1>
 
-          <p className="mt-6 text-pretty text-base leading-relaxed text-accent-foreground/80 md:text-lg">
-            応募状況、選考予定、関連URL、そして日々の思考。
-            <br className="hidden md:inline" />
-            散らばりやすい情報を、Candi が一箇所に整えます。
-          </p>
+          <div className="mt-8 max-w-xl">
+            <p className="text-pretty text-lg leading-relaxed text-accent-foreground/90 md:text-xl lg:text-2xl">
+              応募、面談、迷い、問い。
+              <br />
+              散らばりがちな思考をひとつに集め、
+              <br className="hidden md:inline" />
+              あとから振り返れる「判断の履歴」にします。
+            </p>
+          </div>
 
-          <p className="mt-4 text-sm text-accent-foreground/60 md:text-base">
-            情報の整理に追われることなく、次のキャリアに向き合うために。
-          </p>
-
-          <div className="mt-10">
+          <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
             <Button
               asChild
               size="lg"
-              className="h-12 rounded-lg bg-primary px-8 text-base font-medium text-primary-foreground hover:bg-primary/90"
+              className="h-14 rounded-full bg-primary px-10 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02]"
             >
-              <Link href="/candi">Candiを開く</Link>
+              <Link href="/candi">Candiを使ってみる</Link>
             </Button>
+            
+            <Link 
+              href="#after" 
+              className="text-base text-accent-foreground/60 hover:text-accent-foreground/80 transition-colors underline underline-offset-4 decoration-accent-foreground/20 hover:decoration-accent-foreground/40"
+            >
+              転職が終わったあと、何が残るか
+            </Link>
           </div>
         </div>
       </div>

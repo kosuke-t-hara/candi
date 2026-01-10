@@ -11,7 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 })
 
 export const metadata: Metadata = {
-  title: "Candi - 転職活動を、ひとつの場所に集約する",
+  title: "Candi🍬 - 転職活動を、ひとつの場所に集約する",
   description: "応募状況、選考予定、関連URL、そして日々の思考。散らばりやすい情報を、Candi が一箇所に整えます。",
   icons: {
     icon: [

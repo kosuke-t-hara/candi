@@ -1,38 +1,36 @@
-import { AlertCircle, Calendar, FileText, Brain } from "lucide-react"
+import { Minus } from "lucide-react"
 
 const problems = [
   {
-    icon: AlertCircle,
-    text: "求人媒体やエージェントごとに、応募状況が追い切れない",
+    text: "条件は整理できる。でも、なぜそれを選ぶのかは言葉にならない。",
   },
   {
-    icon: Calendar,
-    text: "面接の日程や会議URLが、メールやカレンダーに散乱している",
+    text: "面談後の感触や違和感は、すぐに薄れてしまう。",
   },
   {
-    icon: FileText,
-    text: "選考の振り返りやメモが、どこにあるか分からない",
-  },
-  {
-    icon: Brain,
-    text: "選考が進むにつれ、情報の整理だけで頭が疲弊していく",
+    text: "選考が進むにつれ、自分の判断基準がどこにあったのか見失いそうになる。",
   },
 ]
 
 export function ProblemSection() {
   return (
-    <section className="bg-background px-5 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-2xl">
-        <h2 className="text-xl font-semibold text-foreground md:text-2xl">よくある課題</h2>
+    <section className="bg-background px-5 py-24 md:px-8 md:py-32">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
+          転職活動は、情報よりも
+          <br />
+          「判断」が難しい。
+        </h2>
 
-        <ul className="mt-8 space-y-5">
+        <div className="mt-16 space-y-12">
           {problems.map((problem, index) => (
-            <li key={index} className="flex items-start gap-4">
-              <problem.icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-              <span className="text-base leading-relaxed text-foreground/90">{problem.text}</span>
-            </li>
+            <div key={index} className="flex items-start gap-6 border-l-2 border-muted pl-8 transition-colors hover:border-primary/40">
+              <span className="text-lg leading-relaxed text-foreground/80 md:text-xl">
+                {problem.text}
+              </span>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   )
