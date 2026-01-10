@@ -9,8 +9,8 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono"
 
 // <CHANGE> Updated metadata for Candi app
 export const metadata: Metadata = {
-  title: "Candi🍭 by Toro",
-  description: "転職活動を効率的に管理するためのアプリ",
+  title: "Candi🍬 by Toro",
+  description: "転職活動の意思決定を残すアプリ",
   generator: "v0.app",
   icons: {
     icon: [

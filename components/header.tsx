@@ -61,7 +61,7 @@ export function Header() {
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/20">
                       <BookOpen className="h-5 w-5" />
                     </div>
-                    <span className="font-medium">Toro</span>
+                    <span className="font-medium">過去のひとこと</span>
                   </Link>
                 </div>
 
