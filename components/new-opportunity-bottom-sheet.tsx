@@ -123,7 +123,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
       <div className="w-full max-w-[640px] flex max-h-[80vh] flex-col rounded-t-3xl bg-white animate-in slide-in-from-bottom duration-300 shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <h2 className="text-lg font-bold text-gray-900">新しい案件を追加</h2>
+          <h2 className="text-lg font-bold text-gray-900">新しい応募を追加</h2>
           <button
             onClick={handleClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"

@@ -527,7 +527,7 @@ export default function AgentsPipelinePage() {
                 <SelectValue placeholder="並び替え" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="nextEvent">次のイベント順</SelectItem>
+                <SelectItem value="nextEvent">イベント順</SelectItem>
                 <SelectItem value="stage">ステージ順</SelectItem>
               </SelectContent>
             </Select>

@@ -32,7 +32,7 @@ export function SortControls({ sortMode, sortDirection, onSortModeChange, onSort
             : "bg-white text-[#555] border-[#E5E7EB] hover:border-[#A1A1AA]",
         )}
       >
-        次のイベント順
+        イベント順
         {sortMode === "nextEvent" &&
           (sortDirection === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
       </button>
