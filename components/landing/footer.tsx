@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="bg-accent px-5 py-16 text-accent-foreground md:px-8 md:py-24">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-col items-center text-center">
-          <span className="text-2xl font-bold tracking-tight">Candi</span>
+          <span className="text-2xl font-bold tracking-tight">Candi🍬</span>
 
           <p className="mt-6 text-base text-accent-foreground/60 max-w-sm">
             転職活動を、結果だけでなく
@@ -32,6 +32,9 @@ export function Footer() {
             </Link>
             <Link href="/lp/candi/story" className="transition-colors hover:text-accent-foreground/80">
               Candiの考え方
+            </Link>
+            <Link href="/roadmap/candi" className="transition-colors hover:text-accent-foreground/80">
+              開発ロードマップ
             </Link>
           </div>
 
