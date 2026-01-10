@@ -7,7 +7,7 @@ interface EmptyApplicationStateProps {
 export function EmptyApplicationState({ onAddClick }: EmptyApplicationStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-[14px] bg-white shadow-sm border border-[#E5E7EB]">
-      <div className="relative w-60 h-60 mb-6">
+      <div className="relative w-40 h-40 md:w-60 md:h-60 mb-6">
         <Image
           src="/candi/empty_application.png"
           alt="進行中の応募はありません"
