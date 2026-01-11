@@ -37,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-sidebar`}
       >
         <NextTopLoader

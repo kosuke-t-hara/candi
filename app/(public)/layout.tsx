@@ -34,6 +34,7 @@ export default function PublicLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
         <NextTopLoader
