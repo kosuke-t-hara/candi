@@ -27,13 +27,22 @@ export function HeroSection() {
           </div>
 
           <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <Button
-              asChild
-              size="lg"
-              className="h-14 rounded-full bg-primary px-10 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02]"
-            >
-              <Link href="/candi">Candiを使ってみる</Link>
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="h-14 rounded-full bg-primary px-10 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02]"
+              >
+                <Link href="/candi">Candiを使ってみる</Link>
+              </Button>
+              <p className="text-xs text-accent-foreground/60 pl-2">
+                <span className="opacity-80">※ 自分に合うか迷っている方へ</span>
+                <br />
+                <a href="mailto:withtoro.app@gmail.com" className="hover:text-accent-foreground underline decoration-accent-foreground/30 underline-offset-2 transition-colors">
+                  Loginせずに相談できます
+                </a>
+              </p>
+            </div>
             
             <div className="flex flex-col gap-3 items-start sm:items-center">
               <Link 

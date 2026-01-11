@@ -39,6 +39,29 @@ export function ValueSection() {
             </div>
           ))}
         </div>
+
+        <div className="mt-20 pt-12 border-t border-muted/20 text-center">
+          <p className="text-base text-muted-foreground/80 leading-relaxed mb-4">
+            ここまで読んで、
+            <br />
+            「自分の場合はどうなんだろう」と思った方へ。
+          </p>
+          <p className="text-base text-muted-foreground/80 leading-relaxed max-w-lg mx-auto">
+            転職活動の内容でも、
+            <br className="md:hidden" />
+            プロダクトの使い方でも構いません。
+            <br /><br />
+            表に出ない形でお話できます。
+          </p>
+          <div className="mt-6">
+            <a 
+              href="mailto:withtoro.app@gmail.com" 
+              className="inline-flex items-center gap-2 text-base font-medium text-foreground/80 hover:text-foreground transition-colors underline decoration-foreground/20 underline-offset-4 hover:decoration-foreground/40"
+            >
+              <span className="text-lg">📩</span> withtoro.app@gmail.com
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   )
