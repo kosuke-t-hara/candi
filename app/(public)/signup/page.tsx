@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { gaEvent } from '@/lib/ga'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +19,23 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+
   const supabase = createClient()
+  const fired = useRef(false)
+  const startedName = useRef(false)
+  const startedEmail = useRef(false)
+  const startedPassword = useRef(false)
+
+  useEffect(() => {
+    if (fired.current) return;
+    fired.current = true;
+
+    gaEvent("auth_view", {
+      screen: "signup",
+      variant: "default",
+      from: "unknown",
+    });
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,17 +56,29 @@ export default function SignupPage() {
 
       if (error) {
         setError(error.message)
+        gaEvent("auth_error", {
+          screen: "signup",
+          method: "email",
+          code: "unknown", // Signup error codes from supabase can vary, treating as unknown or generic for now unless specified
+        });
       } else {
         setSuccess(true)
+        gaEvent("auth_success", { screen: "signup", method: "email" });
       }
     } catch (err) {
       setError('予期せぬエラーが発生しました。')
+      gaEvent("auth_error", {
+        screen: "signup",
+        method: "email",
+        code: "unknown",
+      });
     } finally {
       setLoading(false)
     }
   }
 
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
+    gaEvent("auth_method_click", { screen: "signup", method: provider });
     setLoading(true)
     setError(null)
     try {
@@ -61,9 +90,19 @@ export default function SignupPage() {
       })
       if (error) {
         setError(`${provider}ログインに失敗しました。`)
+        gaEvent("auth_error", {
+          screen: "signup",
+          method: provider,
+          code: "oauth_error",
+        });
       }
     } catch (err) {
       setError('予期せぬエラーが発生しました。')
+      gaEvent("auth_error", {
+        screen: "signup",
+        method: provider,
+        code: "unknown",
+      });
     } finally {
       // Don't set loading to false immediately as we're redirecting
       // setLoading(false) 
@@ -111,9 +150,14 @@ export default function SignupPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="山田 太郎"
+                placeholder="飴玉 太郎"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onFocus={() => {
+                  if (startedName.current) return;
+                  startedName.current = true;
+                  gaEvent("auth_form_start", { screen: "signup", method: "email", field: "name" });
+                }}
                 required
               />
             </div>
@@ -125,6 +169,11 @@ export default function SignupPage() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => {
+                  if (startedEmail.current) return;
+                  startedEmail.current = true;
+                  gaEvent("auth_form_start", { screen: "signup", method: "email", field: "email" });
+                }}
                 required
               />
             </div>
@@ -136,12 +185,25 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                onFocus={() => {
+                  if (startedPassword.current) return;
+                  startedPassword.current = true;
+                  gaEvent("auth_form_start", { screen: "signup", method: "email", field: "password" });
+                }}
                 minLength={6}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pt-6">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading}
+              onClick={() => {
+                gaEvent("auth_method_click", { screen: "signup", method: "email" });
+                gaEvent("auth_submit", { screen: "signup", method: "email" });
+              }}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -207,7 +269,11 @@ export default function SignupPage() {
             </div>
             <div className="text-center text-sm text-gray-500">
               すでにアカウントをお持ちですか？{' '}
-              <Link href="/login" className="text-blue-600 hover:underline">
+              <Link 
+                href="/login" 
+                className="text-blue-600 hover:underline"
+                onClick={() => gaEvent("auth_switch_screen", { from_screen: "signup", to_screen: "login" })}
+              >
                 ログイン
               </Link>
             </div>

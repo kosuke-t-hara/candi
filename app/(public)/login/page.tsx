@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { Loader2 } from 'lucide-react'
+import { gaEvent } from '@/lib/ga'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -19,6 +20,20 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const fired = useRef(false)
+  const startedEmail = useRef(false)
+  const startedPassword = useRef(false)
+
+  useEffect(() => {
+    if (fired.current) return;
+    fired.current = true;
+
+    gaEvent("auth_view", {
+      screen: "login",
+      variant: "default",
+      from: "unknown",
+    });
+  }, []);
 
   const returnUrl = searchParams.get('returnUrl') || '/candi'
 
@@ -38,8 +53,14 @@ function LoginForm() {
           setError('メールアドレスまたはパスワードが正しくありません。')
         } else {
           setError('ログインに失敗しました。')
+          gaEvent("auth_error", {
+            screen: "login",
+            method: "email",
+            code: "invalid_credentials",
+          });
         }
       } else {
+        gaEvent("auth_success", { screen: "login", method: "email" });
         // If coming from LP, redirect to /candi instead of root/lp
         const targetUrl = returnUrl.startsWith('/lp') ? '/candi' : returnUrl
         router.push(targetUrl)
@@ -47,12 +68,20 @@ function LoginForm() {
       }
     } catch (err) {
       setError('予期せぬエラーが発生しました。')
+      gaEvent("auth_error", {
+        screen: "login",
+        method: "email",
+        code: "unknown",
+      });
     } finally {
       setLoadingType(null)
     }
   }
 
+
+
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
+    gaEvent("auth_method_click", { screen: "login", method: provider });
     setLoadingType(provider)
     setError(null)
     try {
@@ -68,9 +97,19 @@ function LoginForm() {
       })
       if (error) {
         setError(`${provider}ログインに失敗しました。`)
+        gaEvent("auth_error", {
+          screen: "login",
+          method: provider,
+          code: "oauth_error",
+        });
       }
     } catch (err) {
       setError('予期せぬエラーが発生しました。')
+      gaEvent("auth_error", {
+        screen: "login",
+        method: provider,
+        code: "unknown",
+      });
     } finally {
       // Don't set loading to false immediately as we're redirecting
       // setLoading(false) 
@@ -100,7 +139,13 @@ function LoginForm() {
                 type="email"
                 placeholder="name@example.com"
                 value={email}
+
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => {
+                  if (startedEmail.current) return;
+                  startedEmail.current = true;
+                  gaEvent("auth_form_start", { screen: "login", method: "email", field: "email" });
+                }}
                 required
               />
             </div>
@@ -110,13 +155,27 @@ function LoginForm() {
                 id="password"
                 type="password"
                 value={password}
+
                 onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => {
+                  if (startedPassword.current) return;
+                  startedPassword.current = true;
+                  gaEvent("auth_form_start", { screen: "login", method: "email", field: "password" });
+                }}
                 required
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pt-6">
-            <Button type="submit" className="w-full" disabled={!!loadingType}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={!!loadingType}
+              onClick={() => {
+                gaEvent("auth_method_click", { screen: "login", method: "email" });
+                gaEvent("auth_submit", { screen: "login", method: "email" });
+              }}
+            >
               {loadingType === 'email' ? (
                 <div className="flex items-center gap-2">
                   <LoadingSpinner className="text-primary-foreground" size={16} />
@@ -195,7 +254,11 @@ function LoginForm() {
 
             <div className="text-center text-sm text-gray-500">
               アカウントをお持ちでないですか？{' '}
-              <Link href="/signup" className="text-blue-600 hover:underline">
+              <Link 
+                href="/signup" 
+                className="text-blue-600 hover:underline"
+                onClick={() => gaEvent("auth_switch_screen", { from_screen: "login", to_screen: "signup" })}
+              >
                 新規登録
               </Link>
             </div>
