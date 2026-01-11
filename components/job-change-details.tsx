@@ -148,19 +148,22 @@ export function JobChangeDetails({ profile, isMasked, entries }: JobChangeDetail
             >
               <div className="space-y-1.5">
                 <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                  いちばん大事なポイント：
                   {entries?.priority 
-                    ? "いちばん大事なポイント：記入あり" 
-                    : "いちばん大事なポイント：まだ言葉になっていません"}
+                    ? "記入あり" 
+                    : <span className="text-[#2F80ED]">まだ言葉になっていません</span>}
                 </p>
                 <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                  転職理由：
                   {entries?.reason 
-                    ? "転職理由：記入あり" 
-                    : "転職理由：あとから書けます"}
+                    ? "記入あり" 
+                    : <span className="text-[#2F80ED]">あとから書けます</span>}
                 </p>
                 <p className="text-xs text-[#9CA3AF]/60 leading-relaxed">
+                  避けたい条件：
                   {entries?.avoid 
-                    ? "避けたい条件：記入あり" 
-                    : "避けたい条件：考え中"}
+                    ? "記入あり" 
+                    : <span className="text-[#2F80ED]">考え中</span>}
                 </p>
               </div>
             </button>
