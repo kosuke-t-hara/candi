@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { gaEvent } from "@/lib/ga"
 
 export function HeroSection() {
   return (
@@ -32,13 +35,29 @@ export function HeroSection() {
                 asChild
                 size="lg"
                 className="h-14 rounded-full bg-primary px-10 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02]"
+                onClick={() => {
+                  gaEvent("cta_click", {
+                    cta_id: "hero_try_candi",
+                    position: "hero",
+                    label: "Candiを使ってみる",
+                  })
+                }}
               >
                 <Link href="/candi">Candiを使ってみる</Link>
               </Button>
               <p className="text-xs text-accent-foreground/60 pl-2">
                 <span className="opacity-80">※ 自分に合うか迷っている方へ</span>
                 <br />
-                <a href="mailto:withtoro.app@gmail.com" className="hover:text-accent-foreground underline decoration-accent-foreground/30 underline-offset-2 transition-colors">
+                <a
+                  href="mailto:withtoro.app@gmail.com"
+                  className="hover:text-accent-foreground underline decoration-accent-foreground/30 underline-offset-2 transition-colors"
+                  onClick={() => {
+                    gaEvent("outbound_click", {
+                      destination: "mailto_withtoro",
+                      position: "hero",
+                    })
+                  }}
+                >
                   Loginせずに相談できます
                 </a>
               </p>

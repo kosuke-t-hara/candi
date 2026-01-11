@@ -1,5 +1,8 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { gaEvent } from "@/lib/ga"
 
 export function Footer() {
   return (
@@ -18,6 +21,13 @@ export function Footer() {
             <Button
               asChild
               className="h-14 rounded-full bg-primary px-10 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02]"
+              onClick={() => {
+                gaEvent("cta_click", {
+                  cta_id: "footer_try_candi",
+                  position: "footer",
+                  label: "Candiを使ってみる",
+                })
+              }}
             >
               <Link href="/candi">Candiを使ってみる</Link>
             </Button>
@@ -34,9 +44,15 @@ export function Footer() {
               <br />
               ご相談いただけます。
             </p>
-            <a 
-              href="mailto:withtoro.app@gmail.com" 
+            <a
+              href="mailto:withtoro.app@gmail.com"
               className="inline-flex items-center gap-2 text-sm font-medium text-accent-foreground/70 hover:text-accent-foreground/90 transition-colors underline decoration-accent-foreground/20 underline-offset-4 hover:decoration-accent-foreground/40"
+              onClick={() => {
+                gaEvent("outbound_click", {
+                  destination: "mailto_withtoro",
+                  position: "footer",
+                })
+              }}
             >
               📩 withtoro.app@gmail.com
               <span className="text-xs opacity-70 font-normal no-underline">（短文・一言だけでもOK）</span>
@@ -53,7 +69,17 @@ export function Footer() {
             <Link href="/lp/candi/story" className="transition-colors hover:text-accent-foreground/80">
               Candiの考え方
             </Link>
-            <Link href="/roadmap/candi" className="transition-colors hover:text-accent-foreground/80">
+            <Link
+              href="/roadmap/candi"
+              className="transition-colors hover:text-accent-foreground/80"
+              onClick={() => {
+                gaEvent("cta_click", {
+                  cta_id: "footer_roadmap",
+                  position: "footer",
+                  label: "開発ロードマップ",
+                })
+              }}
+            >
               開発ロードマップ
             </Link>
           </div>
