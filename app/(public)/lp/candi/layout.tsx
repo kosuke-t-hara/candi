@@ -4,6 +4,7 @@ import { Noto_Sans_JP } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script"
 import "./lp-globals.css"
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
@@ -37,18 +38,24 @@ export default function RootLayout({
     <div className={`${notoSansJP.className} font-lp-sans antialiased min-h-screen bg-background text-foreground`}>
       {children}
       <Analytics />
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-EMMYNHS6S6"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-EMMYNHS6S6');
-        `}
-      </Script>
+      {GA_MEASUREMENT_ID && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}', {
+                page_path: window.location.pathname,
+              });
+            `}
+          </Script>
+        </>
+      )}
     </div>
   )
 }
