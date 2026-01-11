@@ -223,6 +223,7 @@ export function HomePageClient({ initialApplications, initialGrowthLogs, userPro
           profile={userProfile}
           ongoingCount={ongoingCount}
           weeklyCount={weeklyEventCount}
+          totalApplicationCount={applications.length}
           onOngoingClick={handleScrollToApplications}
         />
         

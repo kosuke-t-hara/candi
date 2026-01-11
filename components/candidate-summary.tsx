@@ -12,6 +12,7 @@ interface CandidateSummaryProps {
   profile: Database['public']['Tables']['profiles']['Row'] | null
   ongoingCount: number
   weeklyCount: number
+  totalApplicationCount: number
   onOngoingClick: () => void
 }
 
@@ -21,6 +22,7 @@ export function CandidateSummary({
   profile,
   ongoingCount,
   weeklyCount,
+  totalApplicationCount,
   onOngoingClick
 }: CandidateSummaryProps) {
   const [isPending, startTransition] = useTransition()
@@ -170,10 +172,14 @@ export function CandidateSummary({
                 </>
               )}
             </span>
-            <div onClick={onOngoingClick} className="cursor-pointer hover:opacity-80 transition-opacity">
-              <Tag variant="success">進行中の応募 {ongoingCount}</Tag>
-            </div>
-            <Tag variant="primary">今週の転職活動 {weeklyCount}</Tag>
+            {totalApplicationCount > 0 && (
+              <>
+                <div onClick={onOngoingClick} className="cursor-pointer hover:opacity-80 transition-opacity">
+                  <Tag variant="success">進行中の応募 {ongoingCount}</Tag>
+                </div>
+                <Tag variant="primary">今週の転職活動 {weeklyCount}</Tag>
+              </>
+            )}
           </div>
         </div>
         <MaskToggle isMasked={isMasked} onToggle={onToggleMask} />
