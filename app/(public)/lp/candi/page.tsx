@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/landing/hero-section"
 import { ProblemSection } from "@/components/landing/problem-section"
 import { ValueSection } from "@/components/landing/value-section"
+import { ToroExperienceSection } from "@/components/landing/toro-experience-section"
 import { AfterSection } from "@/components/landing/after-section"
 import { FeaturesSection } from "@/components/landing/features-section"
 import { Footer } from "@/components/landing/footer"
@@ -14,6 +15,9 @@ export default function LandingPage() {
       </TrackSection>
       <TrackSection section="decision_is_hard">
         <ProblemSection />
+      </TrackSection>
+      <TrackSection section="toro_experience">
+        <ToroExperienceSection />
       </TrackSection>
       <TrackSection section="thinking_to_judgement">
         <ValueSection />
