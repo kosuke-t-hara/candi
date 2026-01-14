@@ -43,6 +43,7 @@ interface UseSpeechToTextJaOptions {
   autoLineBreak?: boolean;
   smartNormalize?: boolean;
   onFinal?: (text: string) => void; // 確定テキストを受け取るコールバック
+  breakString?: string;
 }
 
 export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
@@ -52,6 +53,7 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
     autoLineBreak = true,
     smartNormalize = true,
     onFinal,
+    breakString = "\n",
   } = options;
 
   const [interimText, setInterimText] = useState("");
@@ -196,9 +198,9 @@ export const useSpeechToTextJa = (options: UseSpeechToTextJaOptions = {}) => {
   }, [normalizeText, notifyFinal]);
 
   const appendShortBreak = useCallback(() => {
-    // 改行のみを通知
-    notifyFinal("\n");
-  }, [notifyFinal]);
+    // breakString (改行 or スペース) を通知
+    notifyFinal(breakString);
+  }, [notifyFinal, breakString]);
 
 
   const scheduleBreakTimers = useCallback(() => {

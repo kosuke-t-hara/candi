@@ -50,6 +50,7 @@ export function ToroExperienceSection() {
     pauseMs: 1100,
     autoLineBreak: true,
     smartNormalize: true,
+    breakString: ' ',
     onFinal: (text) => {
       setContent((prev) => {
         if (!text) return prev;
@@ -99,6 +100,11 @@ export function ToroExperienceSection() {
   const handleGenerateValues = async () => {
     if (!content.trim() || isGenerating) return
 
+    // Stop recording if active
+    if (isListening) {
+        stop()
+    }
+
     setIsGenerating(true)
     gaEvent('toro_trial_ai_run')
     setQuestion(null) 
@@ -126,6 +132,14 @@ export function ToroExperienceSection() {
     router.push('/login?returnUrl=/write')
   }
 
+  const handleRetry = () => {
+    setQuestion(null)
+    // Focus textarea after state update
+    setTimeout(() => {
+        textareaRef.current?.focus()
+    }, 100)
+  }
+
   return (
     <section ref={sectionRef} className="bg-background px-5 py-16 md:px-8 md:py-24 scroll-mt-24">
       <div className="mx-auto max-w-3xl space-y-4">
@@ -149,7 +163,7 @@ export function ToroExperienceSection() {
                     value={content}
                     onChange={handleTextChange}
                     disabled={isGenerating || !!question}
-                    placeholder="今日いちばん迷っていることは？"
+                    placeholder={interimText ? "" : "今日いちばん迷っていることは？"}
                     className="w-full h-full min-h-[60px] bg-transparent border-none p-0 text-lg font-light leading-relaxed placeholder:text-muted-foreground/40 resize-none outline-none focus:ring-0 disabled:opacity-50"
                 />
                 
@@ -223,9 +237,8 @@ export function ToroExperienceSection() {
                                     <ArrowRight className="w-4 h-4" />
                                 </button>
                                 
-                                <button
-                                    onClick={handleGenerateValues}
-                                    disabled={isGenerating}
+                                 <button
+                                    onClick={handleRetry}
                                     className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mt-2 underline underline-offset-4"
                                 >
                                     もう一度AIで問いを立てる
