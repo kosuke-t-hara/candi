@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { gaEvent } from "@/lib/ga"
+import { ArrowDown } from "lucide-react"
 
 export function HeroSection() {
   return (
@@ -63,19 +64,19 @@ export function HeroSection() {
               </p>
             </div>
             
-            <div className="flex flex-col gap-3 items-start sm:items-center">
-              <Link 
-                href="#after" 
-                className="text-base text-accent-foreground/60 hover:text-accent-foreground/80 transition-colors underline underline-offset-4 decoration-accent-foreground/20 hover:decoration-accent-foreground/40"
-              >
-                転職が終わったあと、何が残るか
-              </Link>
-              <Link
-                href="/lp/candi/story"
-                className="text-sm text-accent-foreground/50 hover:text-accent-foreground/80 transition-colors hover:underline underline-offset-4"
-              >
-                あなたの「選び方」が残る理由 <span aria-hidden="true">→</span>
-              </Link>
+            <div className="flex flex-col gap-3 items-start sm:items-center mt-6">
+               <button
+                  onClick={() => {
+                    gaEvent("hero_toro_link_click")
+                    document.getElementById('toro-experience')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="group flex items-center gap-2 text-base text-accent-foreground/60 hover:text-accent-foreground/80 transition-colors"
+               >
+                  <span className="underline underline-offset-4 decoration-accent-foreground/20 group-hover:decoration-accent-foreground/40">
+                    AIの問いを体験してみる
+                  </span>
+                  <ArrowDown className="w-4 h-4 opacity-60 group-hover:translate-y-1 transition-transform" />
+               </button>
             </div>
           </div>
         </div>

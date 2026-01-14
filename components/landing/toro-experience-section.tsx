@@ -9,15 +9,36 @@ import { gaEvent } from '@/lib/ga'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { toast } from 'sonner'
 import { AnimatePresence, motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 export function ToroExperienceSection() {
   const router = useRouter()
+  // No collapsed state anymore
   const [content, setContent] = useState('')
   const [question, setQuestion] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const shouldAutoScrollRef = useRef(false)
   const [hasStartedInput, setHasStartedInput] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
+  const viewFiredRef = useRef(false)
+
+  // Intersection Observer for lp_toro_view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !viewFiredRef.current) {
+          gaEvent('lp_toro_view')
+          viewFiredRef.current = true
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+    return () => observer.disconnect()
+  }, [])
 
   const {
     interimText,
@@ -34,12 +55,18 @@ export function ToroExperienceSection() {
         if (!text) return prev;
         shouldAutoScrollRef.current = true
         const newContent = prev + text;
+        
+        // Track input if not already tracked
+        if (!hasStartedInput && newContent.length > 0) {
+            setHasStartedInput(true)
+            gaEvent('toro_trial_input')
+        }
         return newContent;
       });
     }
   })
 
-  // Auto-scroll for speech input
+  // Auto-scroll handling
   useEffect(() => {
     if (shouldAutoScrollRef.current && textareaRef.current) {
       const ta = textareaRef.current
@@ -52,7 +79,7 @@ export function ToroExperienceSection() {
     setContent(e.target.value)
     if (!hasStartedInput && e.target.value.length > 0) {
       setHasStartedInput(true)
-      gaEvent('toro_lp_input_start')
+      gaEvent('toro_trial_input')
     }
   }
 
@@ -61,9 +88,10 @@ export function ToroExperienceSection() {
       stop()
     } else {
       start()
+      // Track input start on mic click too if likely to speak
       if (!hasStartedInput) {
         setHasStartedInput(true)
-        gaEvent('toro_lp_input_start')
+        gaEvent('toro_trial_input')
       }
     }
   }
@@ -72,12 +100,12 @@ export function ToroExperienceSection() {
     if (!content.trim() || isGenerating) return
 
     setIsGenerating(true)
-    gaEvent('toro_lp_ai_click')
+    gaEvent('toro_trial_ai_run')
+    setQuestion(null) 
 
     try {
       const generatedQuestion = await generateQuestion(content)
       setQuestion(generatedQuestion)
-      gaEvent('toro_lp_ai_result_view')
     } catch (error) {
       console.error('Failed to generate question:', error)
       toast.error('問いを生成できませんでした。もう一度お試しください')
@@ -87,139 +115,127 @@ export function ToroExperienceSection() {
   }
 
   const handleSaveAndContinue = () => {
-    gaEvent('toro_lp_save_intent')
+    gaEvent('toro_trial_login_click')
     // Save to localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('toro_draft', content)
+      if (question) {
+           localStorage.setItem('toro_draft_question', question)
+      }
     }
     router.push('/login?returnUrl=/write')
   }
 
-  const handleDismiss = () => {
-    setQuestion(null)
-    // Optional: Scroll to next section or just reset
-    // For now, just reset the question view so they can try again or leave
-  }
-
   return (
-    <section className="bg-gradient-to-b from-background to-muted/20 px-5 py-24 md:px-8 md:py-32 overflow-hidden">
-      <div className="mx-auto max-w-3xl space-y-12">
+    <section ref={sectionRef} className="bg-background px-5 py-16 md:px-8 md:py-24 scroll-mt-24">
+      <div className="mx-auto max-w-3xl space-y-4">
         
-        {/* Header */}
+        {/* Section Header */}
         <div className="space-y-4 text-center md:text-left">
           <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
-            いま、何に迷っていますか。
+            AIの問いを体験してみよう。
           </h2>
-          <p className="text-muted-foreground text-lg">
-            1行で大丈夫です。あとで書き直せます。
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            好きなことを書いていいです。
           </p>
         </div>
 
-        {/* Interaction Area */}
-        <div className="relative">
-          <div className="relative group min-h-[300px] bg-background border border-muted-foreground/10 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 focus-within:ring-1 focus-within:ring-primary/20">
-            <textarea
-              ref={textareaRef}
-              value={content}
-              onChange={handleTextChange}
-              placeholder="今日いちばん迷っていることは？"
-              className="w-full h-full min-h-[300px] bg-transparent border-none rounded-3xl p-8 text-lg font-light leading-relaxed placeholder:text-muted-foreground/40 resize-none outline-none focus:ring-0"
-            />
-            
-            {/* Interim Text Overlay */}
-            {interimText && (
-              <div className="absolute inset-0 p-8 pointer-events-none text-lg font-light leading-relaxed tracking-wide text-foreground/30 italic">
-                <span className="invisible">{content}</span>
-                <span>{interimText}</span>
-              </div>
-            )}
-
-            {/* Mic Button */}
-            <div className="absolute bottom-6 right-6">
-              <button
-                onClick={toggleRecording}
-                className={`flex items-center justify-center p-4 rounded-full transition-all duration-300 ${
-                  isListening 
-                    ? 'bg-red-50 text-red-500 shadow-inner' 
-                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-                }`}
-                title={isListening ? "停止" : "音声で入力"}
-              >
-                {isListening ? (
-                  <div className="relative">
-                    <Mic className="w-6 h-6 animate-pulse" />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                  </div>
-                ) : (
-                  <Mic className="w-6 h-6" />
+        {/* The "Card" UI - Always Visible */}
+        <div className="relative overflow-hidden rounded-3xl bg-white border border-black/5 shadow-sm p-6 md:p-8">
+            {/* Input Area */}
+            <div className="relative group min-h-[60px] mb-6">
+                <textarea
+                    ref={textareaRef}
+                    value={content}
+                    onChange={handleTextChange}
+                    disabled={isGenerating || !!question}
+                    placeholder="今日いちばん迷っていることは？"
+                    className="w-full h-full min-h-[60px] bg-transparent border-none p-0 text-lg font-light leading-relaxed placeholder:text-muted-foreground/40 resize-none outline-none focus:ring-0 disabled:opacity-50"
+                />
+                
+                {interimText && (
+                    <div className="absolute inset-0 pointer-events-none text-lg font-light leading-relaxed tracking-wide text-foreground/30 italic">
+                        <span className="invisible">{content}</span>
+                        <span>{interimText}</span>
+                    </div>
                 )}
-              </button>
             </div>
-          </div>
 
-          {/* Action Button */}
-          <div className="mt-8 flex justify-center md:justify-start">
-            <button
-              onClick={handleGenerateValues}
-              disabled={!content.trim() || isGenerating}
-              className="group relative inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 text-primary-foreground shadow-lg transition-all hover:translate-y-[-2px] hover:shadow-xl disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none"
-            >
-              {isGenerating ? (
-                <LoadingSpinner className="w-5 h-5 text-primary-foreground" />
-              ) : (
-                <Sparkles className="w-5 h-5 transition-transform group-hover:rotate-12" />
-              )}
-              <span className="font-medium tracking-wide">AIに問いを立ててもらう</span>
-            </button>
-          </div>
+            {/* Controls & Action */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-6 border-t border-muted/20">
+                <div className="flex items-center gap-4 order-1 sm:order-2 self-end sm:self-auto">
+                    {!question && (
+                        <button
+                            onClick={toggleRecording}
+                            className={`flex items-center justify-center p-3 rounded-full transition-all duration-300 ${
+                                isListening 
+                                ? 'bg-red-50 text-red-500 shadow-inner' 
+                                : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
+                            }`}
+                            title={isListening ? "停止" : "音声で入力"}
+                        >
+                            {isListening ? <Mic className="w-5 h-5 animate-pulse text-red-500" /> : <Mic className="w-5 h-5" />}
+                        </button>
+                    )}
+
+                    {!question && (
+                        <button
+                            onClick={handleGenerateValues}
+                            disabled={!content.trim() || isGenerating}
+                            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                        >
+                            {isGenerating ? <LoadingSpinner size={16} /> : <Sparkles className="w-4 h-4" />}
+                            <span>問いを立ててみる</span>
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Result Display */}
+            <AnimatePresence>
+                {question && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: 'auto', marginTop: 32 }}
+                        className="border-t-2 border-dashed border-muted/50 overflow-hidden"
+                    >
+                        <div className="pt-8 space-y-8">
+                            <div className="space-y-4">
+                                <div className="text-xs font-bold tracking-widest uppercase text-center text-primary/60">
+                                    AIからの問い
+                                </div>
+                                <div className="border-t border-b border-primary/10 py-6 text-center">
+                                    <p className="text-xl md:text-2xl font-serif text-foreground leading-relaxed">
+                                        {question}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center gap-4 text-center bg-secondary/20 rounded-2xl p-6">
+                                <p className="text-sm text-foreground/80 font-medium">
+                                    この問いやあなたの思考を残すには、ログインが必要です。
+                                </p>
+                                <button
+                                    onClick={handleSaveAndContinue}
+                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-8 py-3 font-medium transition-transform hover:scale-105 shadow-lg"
+                                >
+                                    <span>残して続ける</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                                
+                                <button
+                                    onClick={handleGenerateValues}
+                                    disabled={isGenerating}
+                                    className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mt-2 underline underline-offset-4"
+                                >
+                                    もう一度AIで問いを立てる
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-
-        {/* Result Area */}
-        <AnimatePresence>
-          {question && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: 10, height: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              <div className="bg-white/80 backdrop-blur-sm border border-primary/10 rounded-3xl p-8 md:p-10 shadow-xl space-y-8 mt-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-primary/60 text-sm font-medium tracking-wider uppercase">
-                    <Wand className="w-4 h-4" />
-                    AIからの問い
-                  </div>
-                  <p className="text-2xl md:text-3xl font-serif text-foreground leading-relaxed">
-                    {question}
-                  </p>
-                </div>
-
-                <div className="pt-8 border-t border-muted/20 space-y-6">
-                  <p className="text-muted-foreground text-center md:text-left">
-                    この続きを、あとから見返せるように残しますか？
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <button
-                      onClick={handleSaveAndContinue}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-8 py-3 font-medium transition-colors hover:bg-foreground/90"
-                    >
-                      <span>残して続ける</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={handleDismiss}
-                      className="w-full sm:w-auto px-6 py-3 text-muted-foreground hover:text-foreground transition-colors text-sm"
-                    >
-                      今はいいです
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
       </div>
     </section>

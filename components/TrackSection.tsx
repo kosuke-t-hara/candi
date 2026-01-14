@@ -6,10 +6,11 @@ import { gaEvent } from "@/lib/ga";
 export function TrackSection({
   section,
   children,
+  ...props
 }: {
   section: string;
   children: React.ReactNode;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement | null>(null);
   const firedRef = useRef(false);
 
@@ -33,5 +34,5 @@ export function TrackSection({
     return () => obs.disconnect();
   }, [section]);
 
-  return <div ref={ref}>{children}</div>;
+  return <div ref={ref} {...props}>{children}</div>;
 }

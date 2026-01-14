@@ -16,7 +16,7 @@ export default function LandingPage() {
       <TrackSection section="decision_is_hard">
         <ProblemSection />
       </TrackSection>
-      <TrackSection section="toro_experience">
+      <TrackSection section="toro_experience" id="toro-experience" className="scroll-mt-24">
         <ToroExperienceSection />
       </TrackSection>
       <TrackSection section="thinking_to_judgement">

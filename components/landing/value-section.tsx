@@ -25,6 +25,11 @@ export function ValueSection() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl text-center">
           考えを、判断に変えるために。
         </h2>
+        
+        <p className="mt-6 text-center text-lg text-muted-foreground/80">
+          ここまでで、<br className="md:hidden" />
+          あなた自身の問いを、すでに1つ持っています。
+        </p>
 
         <div className="mt-20 grid grid-cols-1 gap-12 md:grid-cols-3">
           {values.map((value, index) => (
