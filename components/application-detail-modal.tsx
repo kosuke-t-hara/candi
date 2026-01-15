@@ -488,6 +488,7 @@ export function ApplicationDetailModal({
                                   setEditingToroEntry(null)
                                   setToroContext({
                                     source: 'candi_event',
+                                    type: 'event_memo',
                                     applicationId: application.id,
                                     eventId: event.id,
                                     eventTitle: event.title || event.type
@@ -579,6 +580,7 @@ export function ApplicationDetailModal({
                       setEditingToroEntry(null)
                       setToroContext({
                         source: 'candi_application',
+                        type: 'application_memo',
                         applicationId: application.id,
                         companyName: application.company
                       })

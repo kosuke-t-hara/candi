@@ -85,6 +85,7 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
             content: entries.join("\n"),
             context: {
               source: 'candi_application',
+              type: 'application_memo',
               applicationId: newApp.id,
               companyName: company
             }

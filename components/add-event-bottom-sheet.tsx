@@ -687,6 +687,7 @@ export function AddEventBottomSheet({
               isAuthenticated={true}
               context={{ 
                 source: 'candi_event', 
+                type: 'event_memo',
                 applicationId: applicationId,
                 eventId: existingEvent?.id,
                 eventTitle: title || eventType
