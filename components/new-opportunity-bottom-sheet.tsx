@@ -81,10 +81,13 @@ export function NewOpportunityBottomSheet({ isOpen, onClose }: NewOpportunityBot
         }
 
         if (entries.length > 0) {
-          await createToroEntry(entries.join("\n"), {
-            source: 'candi_application',
-            applicationId: newApp.id,
-            companyName: company
+          await createToroEntry({
+            content: entries.join("\n"),
+            context: {
+              source: 'candi_application',
+              applicationId: newApp.id,
+              companyName: company
+            }
           })
         }
 

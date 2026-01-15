@@ -26,6 +26,7 @@ interface ToroComposerProps {
   className?: string
   placeholder?: string
   label?: string
+  product?: string
 }
 
 export function ToroComposer({ 
@@ -37,7 +38,8 @@ export function ToroComposer({
   entryId,
   className = '',
   placeholder = "今の気持ちを、そのままに。",
-  label
+  label,
+  product
 }: ToroComposerProps) {
   const [content, setContent] = useState(defaultValue)
   const [isSaving, setIsSaving] = useState(false)
@@ -281,8 +283,7 @@ export function ToroComposer({
       if (entryId) {
         await updateToroEntry(entryId, content)
       } else {
-        // @ts-ignore: createToroEntry signature will be updated later
-        await createToroEntry(content, context)
+        await createToroEntry({ content, context, product })
       }
       
       // 保存成功
