@@ -75,7 +75,16 @@ export async function createEvent(applicationId: string, formData: FormData) {
          update.stage === 'withdrawn' ||
          update.stage === 'accepted')
 
-      if (shouldUpdate) {
+      const isCurrentTerminated = 
+        currentApp.stage === 'rejected' || 
+        currentApp.stage === 'withdrawn'
+
+      const isNewEventTerminating = 
+        update.stage === 'rejected' || 
+        update.stage === 'withdrawn' || 
+        update.stage === 'accepted'
+
+      if (shouldUpdate || (isCurrentTerminated && !isNewEventTerminating)) {
         const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn' || update.stage === 'accepted'
         await updateApplication(applicationId, {
           stage: update.stage,
@@ -142,7 +151,16 @@ export async function updateEvent(eventId: string, formData: FormData) {
         update.stage === 'withdrawn' ||
         update.stage === 'accepted')
 
-     if (shouldUpdate) {
+     const isCurrentTerminated = 
+       currentApp.stage === 'rejected' || 
+       currentApp.stage === 'withdrawn'
+
+     const isNewEventTerminating = 
+       update.stage === 'rejected' || 
+       update.stage === 'withdrawn' || 
+       update.stage === 'accepted'
+
+     if (shouldUpdate || (isCurrentTerminated && !isNewEventTerminating)) {
         const isArchived = update.stage === 'rejected' || update.stage === 'withdrawn' || update.stage === 'accepted'
        await updateApplication(applicationId, {
          stage: update.stage,
